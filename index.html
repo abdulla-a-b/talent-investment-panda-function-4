@@ -291,6 +291,12 @@ body.nodata .view .empty-state{display:block}
 .be-cad .qmt.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .be-cad .tmt,.be-cad .tq{font-family:'IBM Plex Mono';font-size:12px;padding:7px 13px;border:1px solid var(--line);background:var(--card);border-radius:8px;cursor:pointer}
 .be-cad .tmt.on,.be-cad .tq.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.dept-bubbles{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-end;padding:10px 2px}
+.dept-bub{display:flex;flex-direction:column;align-items:center;gap:8px}
+.dept-bub .circle{border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.13)}
+.dept-bub .circle .g{font-family:Archivo;font-weight:800;font-size:15px;line-height:1}
+.dept-bub .circle .s{font-family:'IBM Plex Mono';font-size:9.5px;opacity:.92;margin-top:3px}
+.dept-bub .nm{font-family:'IBM Plex Mono';font-size:11px;color:var(--ink2);text-align:center;max-width:140px;line-height:1.25}
 @media(max-width:880px){.be-tiles{grid-template-columns:repeat(2,1fr)}.be-grid2,.pyr-compare{grid-template-columns:1fr}.osr-wrap{grid-template-columns:1fr}}
 
 /* ---- BE formulas, rules, one-slide ---- */
@@ -436,6 +442,8 @@ body.nodata .view .empty-state{display:block}
    <button class="tq" data-tq="Q3">Q3 Staff Ops</button>
    <button class="tq" data-tq="Q4">Q4 Staff Support</button></div>
   <div class="card" style="overflow-x:auto" id="topTableWrap"></div>
+  <div style="margin-top:28px"><div class="shead" style="margin-bottom:6px"><span class="n">○</span><div><h2 style="font-size:19px">Departments with the highest earners</h2><p id="topDeptSub"></p></div></div>
+   <div id="topDepts" class="dept-bubbles"></div></div>
  </div></section>
 </div>
 
@@ -736,13 +744,29 @@ function buildPeriod(rows,label,classFn){
 let staged=null,stagedRoster=null;
 let ROSTER=[],ROSTER_LABEL='',topMetric='gross',topQ='Q1';
 function normDOJ(v){if(v==null||v==='')return '';if(v instanceof Date)return isNaN(v)?'':v.toISOString().slice(0,10);if(typeof v==='number'){const d=new Date(Math.round((v-25569)*86400000));return isNaN(d)?'':d.toISOString().slice(0,10);}const d=new Date(v);return isNaN(d)?String(v):d.toISOString().slice(0,10);}
-function buildRoster(std,classFn){return std.map(r=>({id:r.EmpID==null?'':String(r.EmpID),name:r.EmpName==null?'':String(r.EmpName),desig:r.DesigName==null?'':String(r.DesigName),doj:normDOJ(r.JDate),gross:(toNum(r.OGross)||0),q:classFn(r)})).filter(r=>r.q);}
+function buildRoster(std,classFn){return std.map(r=>({id:r.EmpID==null?'':String(r.EmpID),name:String((r.EmpName&&String(r.EmpName).trim())?r.EmpName:(r.Name||'')),desig:r.DesigName==null?'':String(r.DesigName),dept:r.DeptName==null?'':String(r.DeptName),doj:normDOJ(r.JDate),gross:(toNum(r.OGross)||0),q:classFn(r)})).filter(r=>r.q);}
 function saveRoster(label){try{localStorage.setItem('ecm_roster',JSON.stringify({label:label,rows:ROSTER}))}catch(e){}}
 function loadRoster(){try{const s=localStorage.getItem('ecm_roster');if(s){const o=JSON.parse(s);ROSTER=o.rows||[];ROSTER_LABEL=o.label||''}}catch(e){}}
 function svcDays(doj){if(!doj)return -1;const d=new Date(doj);if(isNaN(d))return -1;return Math.floor((Date.now()-d.getTime())/86400000);}
 function svcTxt(doj){const days=svcDays(doj);if(days<0)return '\u2014';const d=new Date(doj),now=new Date();let mo=(now.getFullYear()-d.getFullYear())*12+(now.getMonth()-d.getMonth());if(now.getDate()<d.getDate())mo--;if(mo<0)mo=0;return Math.floor(mo/12)+'y '+(mo%12)+'m';}
 function fmtDOJ(doj){if(!doj)return '\u2014';const d=new Date(doj);return isNaN(d)?String(doj):d.toISOString().slice(0,10);}
-function renderTopEarners(){
+function renderDeptCircles(){
+ const box=document.getElementById('topDepts'),sub=document.getElementById('topDeptSub');
+ if(!box)return;
+ if(!ROSTER||!ROSTER.length){box.innerHTML='';if(sub)sub.textContent='';return;}
+ const byDept={};
+ ROSTER.filter(r=>r.q===topQ).forEach(r=>{const d=(r.dept&&String(r.dept).trim())||'(no department)';if(!byDept[d])byDept[d]={dept:d,n:0,gross:0,svcSum:0,svcN:0};const o=byDept[d];o.n++;o.gross+=r.gross||0;const sd=svcDays(r.doj);if(sd>=0){o.svcSum+=sd;o.svcN++;}});
+ let depts=Object.values(byDept);
+ if(!depts.length){box.innerHTML='<div class="be-ans">No department data for '+topQ+'.</div>';if(sub)sub.textContent='';return;}
+ const val=d=>topMetric==='gross'?d.gross:(d.svcN?d.svcSum/d.svcN:0);
+ depts.sort((a,b)=>val(b)-val(a));depts=depts.slice(0,8);
+ const maxV=Math.max(1,...depts.map(val));
+ box.innerHTML=depts.map(d=>{const sz=Math.round(72+Math.sqrt(val(d)/maxV)*92);const avg=d.svcN?(d.svcSum/d.svcN/365).toFixed(1)+'y':'\u2014';
+   return `<div class="dept-bub"><div class="circle" style="width:${sz}px;height:${sz}px;background:${QC[topQ]}"><div class="g">${fmtk(d.gross)}</div><div class="s">${avg} \u00b7 ${d.n} ppl</div></div><div class="nm">${d.dept}</div></div>`;}).join('');
+ if(sub)sub.textContent='Within '+topQ+' \u2014 ranked by '+(topMetric==='gross'?'total gross pay':'average service')+'. Circle size = '+(topMetric==='gross'?'total gross money':'avg service')+'; label shows total \u09f3, avg service & headcount.';
+}
+function renderTopEarners(){renderTopList();renderDeptCircles();}
+function renderTopList(){
  const wrap=document.getElementById('topTableWrap');if(!wrap)return;
  const sub=document.getElementById('topSub');
  if(!ROSTER||!ROSTER.length){wrap.innerHTML='<div class="be-ans" style="line-height:1.6"><b>This view needs your full employee list, which hasn\u2019t been captured yet.</b><br>The Top 10 ranks people by salary and service, so it needs one row per employee \u2014 with <b>ID, name, joining date and salary</b>. Your saved totals (Q1\u2013Q4 counts) don\u2019t include that detail.<br><br><b>To fix it:</b> open the \ud83d\udd12 <b>C&amp;B &amp; Headcount Input</b> tab, unlock, and upload your <b>full monthly master</b> once (the same per-employee file, not a summary/pivot). It will appear here immediately. Files that are just a 4-row summary, or that have no salary / joining-date column, can\u2019t populate this view.</div>';if(sub)sub.textContent='';return;}
@@ -752,8 +776,8 @@ function renderTopEarners(){
  else rows=rows.filter(r=>svcDays(r.doj)>=0).sort((a,b)=>svcDays(b.doj)-svcDays(a.doj));
  rows=rows.slice(0,10);
  if(!rows.length){wrap.innerHTML='<div class="be-ans">No '+(topMetric==='gross'?'salary':'joining-date')+' data available for '+topQ+' in this roster.</div>';return;}
- wrap.innerHTML='<table class="tbl"><thead><tr><th>#</th><th>ID</th><th>Name</th><th>Designation</th><th>Joined</th><th>Service (to date)</th><th>Monthly \u09f3</th></tr></thead><tbody>'+
-  rows.map((r,i)=>`<tr><td><b>${i+1}</b></td><td>${r.id||'\u2014'}</td><td>${r.name||'\u2014'}</td><td>${r.desig||'\u2014'}</td><td>${fmtDOJ(r.doj)}</td><td>${svcTxt(r.doj)}</td><td>${r.gross?fmt(Math.round(r.gross)):'\u2014'}</td></tr>`).join('')+
+ wrap.innerHTML='<table class="tbl"><thead><tr><th>#</th><th>ID</th><th>Name</th><th>Designation</th><th>Department</th><th>Joined</th><th>Service (to date)</th><th>Monthly \u09f3</th></tr></thead><tbody>'+
+  rows.map((r,i)=>`<tr><td><b>${i+1}</b></td><td>${r.id||'\u2014'}</td><td>${r.name||'\u2014'}</td><td>${r.desig||'\u2014'}</td><td>${r.dept||'\u2014'}</td><td>${fmtDOJ(r.doj)}</td><td>${svcTxt(r.doj)}</td><td>${r.gross?fmt(Math.round(r.gross)):'\u2014'}</td></tr>`).join('')+
   '</tbody></table>';
 }
 const drop=document.getElementById('drop'),fileEl=document.getElementById('file');
