@@ -319,7 +319,6 @@ body.nodata .view .empty-state{display:block}
  <div class="brand" id="brand">ECM <small>Workforce Intelligence System</small></div>
  <div class="tabs" id="tabs">
   <button class="tab on" data-v="be">Bird’s Eye</button>
-  <button class="tab" data-v="overview">Overview</button>
   <button class="tab" data-v="trends">Trends</button>
   <button class="tab" data-v="costvalue">Cost&times;Value</button>
   <button class="tab" data-v="input"><span class="lock">🔒</span> C&amp;B &amp; Headcount Input</button>
@@ -374,38 +373,6 @@ body.nodata .view .empty-state{display:block}
  </div></section>
 </div>
 
-<!-- ============ OVERVIEW ============ -->
-<div class="view" data-view="overview">
- <div class="empty-state"><div class="es-ico">📥</div><h2>No data yet</h2><p>Upload your organisation’s monthly employee master in the locked <b>C&amp;B &amp; Headcount Input</b> tab to populate this dashboard. Each upload adds a period to the trend series.</p><button class="btn es-go">Go to data input</button></div>
-  <div class="hero"><div class="wrap"><div class="grid">
-  <div class="hverdict">
-   <div class="htag"><span class="eyebrow" id="ovEyebrow"></span></div>
-   <h1 id="ovTitle">Workforce structure<br>&amp; value at a glance</h1>
-   <div class="lensline">ECM segmentation, cost-vs-value and period trends for the latest uploaded snapshot. Upload each month to build the picture over time.</div>
-  </div>
-  <div class="dial">
-   <span class="eyebrow" style="color:#8FB3AD">ECM Investment Index</span>
-   <div class="dialnum" id="idx">0<small>/100</small></div>
-   <div class="dialbar"><i id="idxbar" style="width:0%"></i></div>
-   <div class="comp" id="comp"></div>
-  </div>
- </div></div></div>
- <div class="strip"><div class="wrap" id="strip"></div></div>
- <section><div class="wrap">
-  <div class="shead"><span class="n">01</span><div><h2>The workforce, mapped</h2><p>Every employee placed in the ECM quadrant by employment layer and role function. Bubble size = headcount; colour = the Cost&times;Value decision each segment calls for.</p></div></div>
-  <div class="qwrap">
-   <div class="quad" id="quad"><div class="axx"></div><div class="axy"></div>
-    <span class="qlabel axlab-t">Operations →</span><span class="qlabel axlab-b">← Support</span>
-    <span class="qlabel axlab-l">Staff ↑</span><span class="qlabel axlab-r">Labour ↓</span></div>
-   <div class="qleg" id="qleg"></div>
-  </div>
- </div></section>
- <section><div class="wrap">
-  <div class="shead"><span class="n">02</span><div><h2>Segment detail</h2><p>Headcount and payroll by segment for the current period. Note how cost concentrates in tiers that are tiny by headcount.</p></div></div>
-  <div class="card" style="overflow-x:auto"><table class="tbl"><thead><tr><th>Segment</th><th>Head</th><th>Head %</th><th>Monthly ৳</th><th>Cost %</th><th>Avg ৳/head</th></tr></thead><tbody id="segbody"></tbody></table></div>
- </div></section>
-</div>
-
 <!-- ============ TRENDS ============ -->
 <div class="view" data-view="trends">
  <div class="empty-state"><div class="es-ico">📥</div><h2>No data yet</h2><p>Upload your organisation’s monthly employee master in the locked <b>C&amp;B &amp; Headcount Input</b> tab to populate this dashboard. Each upload adds a period to the trend series.</p><button class="btn es-go">Go to data input</button></div>
@@ -416,6 +383,13 @@ body.nodata .view .empty-state{display:block}
    <button class="cad" data-cad="quarterly">Quarterly</button>
    <button class="cad" data-cad="yearly">Yearly</button>
   </div>
+  <div class="chartbox" style="margin-bottom:18px"><h3>Workforce mapping &mdash; Q1–Q4</h3><div class="sub" id="mapSub">Each employee placed in the ECM quadrant by employment layer (Labour / Staff) and role function (Operations / Support). Bubble size = headcount.</div>
+   <div class="qwrap" style="margin-top:8px">
+    <div class="quad" id="quad"><div class="axx"></div><div class="axy"></div>
+     <span class="qlabel axlab-t">Operations →</span><span class="qlabel axlab-b">← Support</span>
+     <span class="qlabel axlab-l">Staff ↑</span><span class="qlabel axlab-r">Labour ↓</span></div>
+    <div class="qleg" id="qleg"></div>
+   </div></div>
   <div class="pyr-card" id="pyrCard">
    <div class="pyr-head"><div><h3>Workforce pyramid &mdash; Workers / Staff / Management</h3><div class="sub" id="pyrSub"></div></div><div class="pyr-chips" id="pyrChips"></div></div>
    <div class="pyr-body"><div class="pyr-svg" id="pyrSvg"></div></div>
@@ -547,7 +521,7 @@ function updateAsof(msg){const p=latestPeriod(),el=document.getElementById('asof
 function applyBranding(){const o=(CONFIG.orgName||'').trim();
  document.getElementById('brand').innerHTML=(o?o+' \u00b7 ECM':'ECM')+' <small>Workforce Intelligence System</small>';
  if(o)document.title=o+' — ECM Workforce Intelligence System';}
-function refreshDataState(){document.body.classList.toggle('nodata',!hasData());updateAsof();if(hasData()){renderBE(beCad);overview();costValue();}}
+function refreshDataState(){document.body.classList.toggle('nodata',!hasData());updateAsof();if(hasData()){renderBE(beCad);costValue();}}
 
 /* ---------- tabs ---------- */
 document.getElementById('tabs').addEventListener('click',e=>{
@@ -607,11 +581,25 @@ let charts={},curCad='monthly';
 function destroy(){Object.values(charts).forEach(c=>{try{c.destroy()}catch(e){}});charts={}}
 function dir(a,b){const d=b-a;return d>0.05?['rose','▲',C.brick]:d<-0.05?['fell','▼',C.teal]:['held','▬',C.slate]}
 
+function renderQuadMap(L,label){
+ const q=document.getElementById('quad');if(!q||!L)return;
+ const S=L.seg_coded,tot=L.meta.total;
+ q.querySelectorAll('.qcell').forEach(x=>x.remove());
+ const pos={Q3:['right','top'],Q4:['left','top'],Q1:['right','bottom'],Q2:['left','bottom']};
+ const maxh=Math.max(1,...Object.values(S).map(x=>x.head));
+ Object.entries(pos).forEach(([k,p])=>{const cell=document.createElement('div');cell.className='qcell';cell.style[p[0]]='0';cell.style[p[1]]='0';
+  const sz=40+Math.sqrt((S[k].head||0)/maxh)*112;
+  cell.innerHTML=`<div class="bub" style="width:${sz}px;height:${sz}px;background:${QC[k]}"><div class="qn">${k}</div><div class="qh">${(S[k].head/Math.max(1,tot)*100).toFixed(0)}%</div><div class="ql">${fmt(S[k].head)} ppl</div></div>`;
+  q.appendChild(cell);});
+ const leg=document.getElementById('qleg');if(leg){leg.innerHTML='';['Q3','Q1','Q4','Q2'].forEach(k=>leg.insertAdjacentHTML('beforeend',`<div class="item"><span class="dot" style="background:${QC[k]}"></span><div><b>${k} ${QNAME[k]}<span class="tag" style="background:${DECC[DEC[k]]}">${DEC[k]}</span></b><div class="d">${QDESC[k]}</div></div></div>`));}
+ const sub=document.getElementById('mapSub');if(sub)sub.textContent='Latest '+curCad+' period: '+(label||'');
+}
 function renderTrends(cad){
  curCad=cad;destroy();
  const S=SERIES[cad];
- if(!S||!S.length){document.getElementById('pyrSvg').innerHTML='';document.getElementById('pyrChips').innerHTML='';document.getElementById('pyrSub').textContent='No periods in this cadence yet.';['rQ3','rOS','rHC','rMix','rCost','rPyr'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='';});return;}
+ if(!S||!S.length){document.getElementById('pyrSvg').innerHTML='';document.getElementById('pyrChips').innerHTML='';document.getElementById('pyrSub').textContent='No periods in this cadence yet.';['rQ3','rOS','rHC','rMix','rCost','rPyr'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='';});const qq=document.getElementById('quad');if(qq)qq.querySelectorAll('.qcell').forEach(x=>x.remove());const ql=document.getElementById('qleg');if(ql)ql.innerHTML='';const ms=document.getElementById('mapSub');if(ms)ms.textContent='No periods in this cadence yet.';return;}
  const labels=S.map(p=>p.label);
+ renderQuadMap(deriveLatest(S[S.length-1]),S[S.length-1].label);
  const q3=S.map(p=>p.q3pct),os=S.map(p=>p.opsSupport),hc=S.map(p=>p.total);
  const floor=SEED.meta.healthyQ3;
  const payroll=S.map(p=>p.payroll),anyCost=payroll.some(v=>v!=null);
