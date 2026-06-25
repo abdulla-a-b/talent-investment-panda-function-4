@@ -289,6 +289,8 @@ body.nodata .view .empty-state{display:block}
 .be-cad .cad.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .be-cad .qmt{font-family:'IBM Plex Mono';font-size:12px;padding:7px 14px;border:1px solid var(--line);background:var(--card);border-radius:8px;cursor:pointer}
 .be-cad .qmt.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.be-cad .tmt,.be-cad .tq{font-family:'IBM Plex Mono';font-size:12px;padding:7px 13px;border:1px solid var(--line);background:var(--card);border-radius:8px;cursor:pointer}
+.be-cad .tmt.on,.be-cad .tq.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 @media(max-width:880px){.be-tiles{grid-template-columns:repeat(2,1fr)}.be-grid2,.pyr-compare{grid-template-columns:1fr}.osr-wrap{grid-template-columns:1fr}}
 
 /* ---- BE formulas, rules, one-slide ---- */
@@ -321,6 +323,7 @@ body.nodata .view .empty-state{display:block}
   <button class="tab on" data-v="be">Bird’s Eye</button>
   <button class="tab" data-v="trends">Trends</button>
   <button class="tab" data-v="costvalue">Cost&times;Value</button>
+  <button class="tab" data-v="top">Top 10</button>
   <button class="tab" data-v="input"><span class="lock">🔒</span> C&amp;B &amp; Headcount Input</button>
  </div>
  <div class="asof" id="asofline"></div>
@@ -416,6 +419,23 @@ body.nodata .view .empty-state{display:block}
    <div class="rationale"><span class="why">Why this view</span>Headcount hides the real story: a segment can be 4% of people but a fifth of payroll. Plotting cost against value tells you where money is well spent (high value) versus where it needs governing (high cost, lower value) — and where under-spend is quietly costing more than it saves.</div></div>
    <div class="cards" id="deccards"></div>
   </div>
+ </div></section>
+</div>
+
+<!-- ============ TOP 10 ============ -->
+<div class="view" data-view="top">
+ <div class="empty-state"><div class="es-ico">📥</div><h2>No data yet</h2><p>Upload your monthly employee master in the locked <b>C&amp;B &amp; Headcount Input</b> tab to populate this dashboard.</p><button class="btn es-go">Go to data input</button></div>
+ <section><div class="wrap">
+  <div class="shead"><span class="n">★</span><div><h2>Top 10 by quadrant</h2><p id="topSub"></p></div></div>
+  <div class="be-cad" style="margin-bottom:8px"><span style="font-family:'IBM Plex Mono';font-size:11px;color:var(--muted)">Rank by:</span>
+   <button class="tmt on" data-tmt="gross">Top earners (salary)</button>
+   <button class="tmt" data-tmt="svc">Longest service</button></div>
+  <div class="be-cad" style="margin-bottom:16px"><span style="font-family:'IBM Plex Mono';font-size:11px;color:var(--muted)">Quadrant:</span>
+   <button class="tq on" data-tq="Q1">Q1 Labour Ops</button>
+   <button class="tq" data-tq="Q2">Q2 Labour Support</button>
+   <button class="tq" data-tq="Q3">Q3 Staff Ops</button>
+   <button class="tq" data-tq="Q4">Q4 Staff Support</button></div>
+  <div class="card" style="overflow-x:auto" id="topTableWrap"></div>
  </div></section>
 </div>
 
@@ -531,6 +551,7 @@ document.getElementById('tabs').addEventListener('click',e=>{
  const v=b.dataset.v;
  document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.dataset.view===v));
  if(v==='be')renderBE(beCad);
+ if(v==='top')renderTopEarners();
  if(v==='trends')renderTrends(curCad);
  window.scrollTo(0,0);
 });
@@ -712,7 +733,29 @@ function buildPeriod(rows,label,classFn){
 }
 
 /* ---------- INPUT: upload ---------- */
-let staged=null;
+let staged=null,stagedRoster=null;
+let ROSTER=[],ROSTER_LABEL='',topMetric='gross',topQ='Q1';
+function normDOJ(v){if(v==null||v==='')return '';if(v instanceof Date)return isNaN(v)?'':v.toISOString().slice(0,10);if(typeof v==='number'){const d=new Date(Math.round((v-25569)*86400000));return isNaN(d)?'':d.toISOString().slice(0,10);}const d=new Date(v);return isNaN(d)?String(v):d.toISOString().slice(0,10);}
+function buildRoster(std,classFn){return std.map(r=>({id:r.EmpID==null?'':String(r.EmpID),name:r.EmpName==null?'':String(r.EmpName),desig:r.DesigName==null?'':String(r.DesigName),doj:normDOJ(r.JDate),gross:(toNum(r.OGross)||0),q:classFn(r)})).filter(r=>r.q);}
+function saveRoster(label){try{localStorage.setItem('ecm_roster',JSON.stringify({label:label,rows:ROSTER}))}catch(e){}}
+function loadRoster(){try{const s=localStorage.getItem('ecm_roster');if(s){const o=JSON.parse(s);ROSTER=o.rows||[];ROSTER_LABEL=o.label||''}}catch(e){}}
+function svcDays(doj){if(!doj)return -1;const d=new Date(doj);if(isNaN(d))return -1;return Math.floor((Date.now()-d.getTime())/86400000);}
+function svcTxt(doj){const days=svcDays(doj);if(days<0)return '\u2014';const d=new Date(doj),now=new Date();let mo=(now.getFullYear()-d.getFullYear())*12+(now.getMonth()-d.getMonth());if(now.getDate()<d.getDate())mo--;if(mo<0)mo=0;return Math.floor(mo/12)+'y '+(mo%12)+'m';}
+function fmtDOJ(doj){if(!doj)return '\u2014';const d=new Date(doj);return isNaN(d)?String(doj):d.toISOString().slice(0,10);}
+function renderTopEarners(){
+ const wrap=document.getElementById('topTableWrap');if(!wrap)return;
+ const sub=document.getElementById('topSub');
+ if(!ROSTER||!ROSTER.length){wrap.innerHTML='<div class="be-ans">No employee-level roster yet. Upload a full master file (with salary and joining-date columns) in the locked input tab \u2014 summary/counts-only files don\u2019t carry the people detail this view needs.</div>';if(sub)sub.textContent='';return;}
+ if(sub)sub.textContent='Latest roster: '+(ROSTER_LABEL||'\u2014')+'  \u00b7  '+ROSTER.length+' employees  \u00b7  ranked within each ECM quadrant.';
+ let rows=ROSTER.filter(r=>r.q===topQ);
+ if(topMetric==='gross')rows=rows.filter(r=>r.gross>0).sort((a,b)=>b.gross-a.gross);
+ else rows=rows.filter(r=>svcDays(r.doj)>=0).sort((a,b)=>svcDays(b.doj)-svcDays(a.doj));
+ rows=rows.slice(0,10);
+ if(!rows.length){wrap.innerHTML='<div class="be-ans">No '+(topMetric==='gross'?'salary':'joining-date')+' data available for '+topQ+' in this roster.</div>';return;}
+ wrap.innerHTML='<table class="tbl"><thead><tr><th>#</th><th>ID</th><th>Name</th><th>Designation</th><th>Joined</th><th>Service (to date)</th><th>Monthly \u09f3</th></tr></thead><tbody>'+
+  rows.map((r,i)=>`<tr><td><b>${i+1}</b></td><td>${r.id||'\u2014'}</td><td>${r.name||'\u2014'}</td><td>${r.desig||'\u2014'}</td><td>${fmtDOJ(r.doj)}</td><td>${svcTxt(r.doj)}</td><td>${r.gross?fmt(Math.round(r.gross)):'\u2014'}</td></tr>`).join('')+
+  '</tbody></table>';
+}
 const drop=document.getElementById('drop'),fileEl=document.getElementById('file');
 drop.onclick=()=>fileEl.click();
 ['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over')}));
@@ -728,6 +771,8 @@ const COLMAP={
  gross:['ogross','gross','grosssalary','salary','grosspay','totalsalary','grossamount','monthlysalary','grosswage','grosssal','ctc','netpay','basicgross'],
  name:['name','company','unit','companyname','unitname','factory','location','branch','plant','entity'],
  jdate:['jdate','joindate','joiningdate','doj','dateofjoining','joiningdt','joined','hiredate','dateofjoin'],
+ empid:['empid','employeeid','staffid','empcode','employeecode','idno','cardno','id','code','enrollno','pin'],
+ empname:['empname','employeename','fullname','workername','staffname','employee','worker'],
  quad:['ecm','quadrant','classification','segment','ecmsegment','ecmquadrant','quad','ecmclass','ecmcategory','ecmtype']
 };
 function toNum(v){if(typeof v==='number')return v;const s=String(v==null?'':v).replace(/[, ]/g,'');return /^-?\d+(\.\d+)?$/.test(s)?parseFloat(s):null}
@@ -788,16 +833,17 @@ function handleFile(f){
   try{
    const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array',cellDates:true});
    const sum=detectSummary(wb);
-   if(sum){staged=periodFromCounts(sum.head,document.getElementById('plabel').value);showPreview(staged,sum.head.Q1+sum.head.Q2+sum.head.Q3+sum.head.Q4);showBanner('ok','Read as a summary \u2014 used your Q1\u2013Q4 totals directly (no per-employee re-classification).');return;}
+   if(sum){staged=periodFromCounts(sum.head,document.getElementById('plabel').value);stagedRoster=[];showPreview(staged,sum.head.Q1+sum.head.Q2+sum.head.Q3+sum.head.Q4);showBanner('ok','Read as a summary \u2014 used your Q1\u2013Q4 totals directly (no per-employee re-classification).');return;}
    const picked=pickSheet(wb);
    if(!picked){showBanner('err','No data rows found in this workbook.');return}
    const {rows,map,quadCol,sheet,hdrs}=picked;
    if(quadCol){
     // (B) explicit classification column found (by name or contents) — honour it exactly
-    let std=rows.map(r=>({DesigName:map.desig?r[map.desig]:'',DeptName:map.dept?r[map.dept]:'',Type:map.type?r[map.type]:'',OGross:map.gross?r[map.gross]:0,Name:map.name?r[map.name]:'',JDate:map.jdate?r[map.jdate]:'',ECM:r[quadCol]}));
+    let std=rows.map(r=>({DesigName:map.desig?r[map.desig]:'',DeptName:map.dept?r[map.dept]:'',Type:map.type?r[map.type]:'',OGross:map.gross?r[map.gross]:0,Name:map.name?r[map.name]:'',JDate:map.jdate?r[map.jdate]:'',EmpID:map.empid?r[map.empid]:'',EmpName:map.empname?r[map.empname]:'',ECM:r[quadCol]}));
     std=std.filter(r=>parseQuad(r.ECM));                 // count only classified employee rows
     if(!std.length){showBanner('err','Found a classification column ("'+quadCol+'") but no rows had Q1\u2013Q4 values.');return}
     staged=buildPeriod(std,document.getElementById('plabel').value,r=>parseQuad(r.ECM));
+    stagedRoster=buildRoster(std,r=>parseQuad(r.ECM));
     staged._meta={sheet:sheet,gross:!!map.gross};
     showPreview(staged,std.length);
     showBanner('ok','Used your "'+quadCol+'" column \u2014 kept your exact Q1\u2013Q4 split ('+std.length+' classified rows).'+(map.gross?'':' No salary column, so cost shows 0.'));
@@ -806,10 +852,11 @@ function handleFile(f){
    // (C) no classification present — keyword fallback needs Type/Designation/Department
    const miss=['type','desig','dept'].filter(k=>!map[k]);
    if(miss.length){showBanner('err','No classification column found, and the columns needed to derive one are missing: '+miss.map(k=>PRETTY[k]).join(', ')+'. Headers on sheet "'+sheet+'": '+hdrs.join(', ')+'. Add an ECM column (values Q1\u2013Q4) or rename a column to match.');return}
-   let std=rows.map(r=>({Type:r[map.type],DesigName:r[map.desig],DeptName:r[map.dept],OGross:map.gross?r[map.gross]:0,Name:map.name?r[map.name]:'',JDate:map.jdate?r[map.jdate]:''}));
+   let std=rows.map(r=>({Type:r[map.type],DesigName:r[map.desig],DeptName:r[map.dept],OGross:map.gross?r[map.gross]:0,Name:map.name?r[map.name]:'',JDate:map.jdate?r[map.jdate]:'',EmpID:map.empid?r[map.empid]:'',EmpName:map.empname?r[map.empname]:''}));
    std=std.filter(r=>String(r.Type).trim()||String(r.DesigName).trim()||String(r.DeptName).trim());
    if(!std.length){showBanner('err','Found the columns but no employee rows on sheet "'+sheet+'".');return}
    staged=buildPeriod(std,document.getElementById('plabel').value,classifyRow);
+   stagedRoster=buildRoster(std,classifyRow);
    staged._meta={sheet:sheet,gross:!!map.gross};
    showPreview(staged,std.length);
    showBanner('warn','No ECM column found \u2014 classified from job titles by keyword (may differ from your own split). Add an ECM column with Q1\u2013Q4 to use your exact classification.');
@@ -840,10 +887,11 @@ document.getElementById('save').onclick=()=>{
  if(i>=0)arr[i]=staged;else arr.push(staged);
  persist(cad,staged);
  cacheLocal();
+ if(stagedRoster&&stagedRoster.length){ROSTER=stagedRoster;ROSTER_LABEL=savedLabel;saveRoster(savedLabel);}
  renderStored();
  document.getElementById('discard').click();
  refreshDataState();
- renderTrends(curCad);
+ renderTrends(curCad);renderTopEarners();
  showSync('Saved “'+savedLabel+'” to the '+cad+' series.');
  const ok=document.getElementById('syncnote');ok.className='banner ok';
 };
@@ -1169,9 +1217,11 @@ function renderBE(cad){
 }
 document.querySelectorAll('.be-cad .cad').forEach(b=>b.onclick=()=>{document.querySelectorAll('.be-cad .cad').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderBE(b.dataset.becad);});
 document.querySelectorAll('.qmt').forEach(b=>b.onclick=()=>{document.querySelectorAll('.qmt').forEach(x=>x.classList.remove('on'));b.classList.add('on');beQuadMetric=b.dataset.qmt;renderBE(beCad);});
+document.querySelectorAll('.tmt').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tmt').forEach(x=>x.classList.remove('on'));b.classList.add('on');topMetric=b.dataset.tmt;renderTopEarners();});
+document.querySelectorAll('.tq').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tq').forEach(x=>x.classList.remove('on'));b.classList.add('on');topQ=b.dataset.tq;renderTopEarners();});
 
 /* ---------- init ---------- */
-loadAll();
+loadRoster();loadAll();renderTopEarners();
 document.querySelectorAll('.es-go').forEach(b=>b.onclick=gotoInput);
 document.getElementById('clearAll').onclick=clearAllPeriods;
 </script>
