@@ -826,7 +826,12 @@ function detectSummary(wb){
  }
  return null;
 }
-function resolveHeaders(hdrs){const m={};hdrs.forEach(h=>{const k=headerKey(h);for(const c in COLMAP){if(COLMAP[c].indexOf(k)>=0&&!m[c])m[c]=h}});return m}
+function resolveHeaders(hdrs){const m={};hdrs.forEach(h=>{const k=headerKey(h);for(const c in COLMAP){if(COLMAP[c].indexOf(k)>=0&&!m[c])m[c]=h}});
+ // fallback: any header containing 'name' that is clearly a person's name (not designation/unit/section/relatives)
+ if(!m.empname){const cand=hdrs.find(h=>{const k=headerKey(h);return k.indexOf('name')>=0&&!/(company|unit|file|dept|department|section|sec|division|floor|line|father|mother|spouse|husband|wife|nominee|guarantor|bank|account|user|login|brand|desig|grade|group|category|type)/.test(k);});if(cand)m.empname=cand;}
+ // fallback: any department-like header
+ if(!m.dept){const cand=hdrs.find(h=>{const k=headerKey(h);return /(dept|department|division|wing|function)/.test(k)&&!/desig/.test(k);});if(cand)m.dept=cand;}
+ return m}
 function findQuadColumn(rows){
  if(!rows.length)return null;
  const cols=Object.keys(rows[0]),sample=rows.slice(0,Math.min(rows.length,400));
