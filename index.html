@@ -542,7 +542,7 @@ function updateAsof(msg){const p=latestPeriod(),el=document.getElementById('asof
 function applyBranding(){const o=(CONFIG.orgName||'').trim();
  document.getElementById('brand').innerHTML=(o?o+' \u00b7 ECM':'ECM')+' <small>Workforce Intelligence System</small>';
  if(o)document.title=o+' — ECM Workforce Intelligence System';}
-function refreshDataState(){document.body.classList.toggle('nodata',!hasData());updateAsof();if(hasData()){renderBE(beCad);costValue();}}
+function refreshDataState(){document.body.classList.toggle('nodata',!hasData());updateAsof();if(hasData()){renderBE(beCad);costValue();}renderTopEarners();}
 
 /* ---------- tabs ---------- */
 document.getElementById('tabs').addEventListener('click',e=>{
@@ -745,7 +745,7 @@ function fmtDOJ(doj){if(!doj)return '\u2014';const d=new Date(doj);return isNaN(
 function renderTopEarners(){
  const wrap=document.getElementById('topTableWrap');if(!wrap)return;
  const sub=document.getElementById('topSub');
- if(!ROSTER||!ROSTER.length){wrap.innerHTML='<div class="be-ans">No employee-level roster yet. Upload a full master file (with salary and joining-date columns) in the locked input tab \u2014 summary/counts-only files don\u2019t carry the people detail this view needs.</div>';if(sub)sub.textContent='';return;}
+ if(!ROSTER||!ROSTER.length){wrap.innerHTML='<div class="be-ans" style="line-height:1.6"><b>This view needs your full employee list, which hasn\u2019t been captured yet.</b><br>The Top 10 ranks people by salary and service, so it needs one row per employee \u2014 with <b>ID, name, joining date and salary</b>. Your saved totals (Q1\u2013Q4 counts) don\u2019t include that detail.<br><br><b>To fix it:</b> open the \ud83d\udd12 <b>C&amp;B &amp; Headcount Input</b> tab, unlock, and upload your <b>full monthly master</b> once (the same per-employee file, not a summary/pivot). It will appear here immediately. Files that are just a 4-row summary, or that have no salary / joining-date column, can\u2019t populate this view.</div>';if(sub)sub.textContent='';return;}
  if(sub)sub.textContent='Latest roster: '+(ROSTER_LABEL||'\u2014')+'  \u00b7  '+ROSTER.length+' employees  \u00b7  ranked within each ECM quadrant.';
  let rows=ROSTER.filter(r=>r.q===topQ);
  if(topMetric==='gross')rows=rows.filter(r=>r.gross>0).sort((a,b)=>b.gross-a.gross);
