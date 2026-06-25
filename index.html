@@ -370,6 +370,15 @@ body.nodata .view .empty-state{display:block}
    <div class="be-ans" id="beAns5"></div>
    <div class="rule">Decision rule: revenue should grow <b>at least as fast as</b> headcount and cost. If headcount% or cost% growth outruns revenue% growth, efficiency (revenue per employee) is falling.</div></div>
 
+  <div class="qcard"><span class="qn">WORKFORCE MAPPING</span><h3>Where each quadrant sits — Q1–Q4</h3>
+   <div class="pyr-head" style="border:none;padding:0;margin-bottom:6px"><div><div class="sub" id="mapSub"></div></div><div class="pyr-chips" id="mapChips"></div></div>
+   <div class="qwrap" style="margin-top:6px">
+    <div class="quad" id="quad"><div class="axx"></div><div class="axy"></div>
+     <span class="qlabel axlab-t">Operations →</span><span class="qlabel axlab-b">← Support</span>
+     <span class="qlabel axlab-l">Staff ↑</span><span class="qlabel axlab-r">Labour ↓</span></div>
+    <div class="qleg" id="qleg"></div>
+   </div></div>
+
   <div class="qcard"><span class="qn">QUADRANT TRENDS</span><h3>How each quadrant (Q1–Q4) is changing over time</h3>
    <div class="be-cad" style="margin-bottom:12px"><span style="font-family:'IBM Plex Mono';font-size:11px;color:var(--muted)">Show:</span>
     <button class="qmt on" data-qmt="hc">Headcount</button><button class="qmt" data-qmt="cost">Cost</button></div>
@@ -392,14 +401,6 @@ body.nodata .view .empty-state{display:block}
    <button class="cad" data-cad="quarterly">Quarterly</button>
    <button class="cad" data-cad="yearly">Yearly</button>
   </div>
-  <div class="chartbox" style="margin-bottom:18px">
-   <div class="pyr-head"><div><h3>Workforce mapping &mdash; Q1–Q4</h3><div class="sub" id="mapSub"></div></div><div class="pyr-chips" id="mapChips"></div></div>
-   <div class="qwrap" style="margin-top:8px">
-    <div class="quad" id="quad"><div class="axx"></div><div class="axy"></div>
-     <span class="qlabel axlab-t">Operations →</span><span class="qlabel axlab-b">← Support</span>
-     <span class="qlabel axlab-l">Staff ↑</span><span class="qlabel axlab-r">Labour ↓</span></div>
-    <div class="qleg" id="qleg"></div>
-   </div></div>
   <div class="pyr-card" id="pyrCard">
    <div class="pyr-head"><div><h3>Workforce pyramid &mdash; Workers / Staff / Management</h3><div class="sub" id="pyrSub"></div></div><div class="pyr-chips" id="pyrChips"></div></div>
    <div class="pyr-body"><div class="pyr-svg" id="pyrSvg"></div></div>
@@ -616,7 +617,8 @@ function dir(a,b){const d=b-a;return d>0.05?['rose','▲',C.brick]:d<-0.05?['fel
 
 let mapSel={};
 function renderQuadMap(cad){
- const S=seriesFor(cad);if(!S||!S.length)return;
+ const S=seriesFor(cad);
+ if(!S||!S.length){const q=document.getElementById('quad');if(q)q.querySelectorAll('.qcell').forEach(x=>x.remove());const ql=document.getElementById('qleg');if(ql)ql.innerHTML='';const mc=document.getElementById('mapChips');if(mc)mc.innerHTML='';const ms=document.getElementById('mapSub');if(ms)ms.textContent='No periods in this cadence yet.';return;}
  const chips=document.getElementById('mapChips');
  if(mapSel[cad]==null||mapSel[cad]>=S.length)mapSel[cad]=S.length-1;
  if(chips){chips.innerHTML='';S.forEach((p,i)=>chips.insertAdjacentHTML('beforeend',`<button class="pyr-chip ${i===mapSel[cad]?'on':''}" data-i="${i}">${p.label}</button>`));
@@ -637,9 +639,8 @@ function renderQuadMap(cad){
 function renderTrends(cad){
  curCad=cad;destroy();
  const S=seriesFor(cad);
- if(!S||!S.length){document.getElementById('pyrSvg').innerHTML='';document.getElementById('pyrChips').innerHTML='';document.getElementById('pyrSub').textContent='No periods in this cadence yet.';['rQ3','rOS','rHC','rMix','rCost','rPyr'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='';});const qq=document.getElementById('quad');if(qq)qq.querySelectorAll('.qcell').forEach(x=>x.remove());const ql=document.getElementById('qleg');if(ql)ql.innerHTML='';const ms=document.getElementById('mapSub');if(ms)ms.textContent='No periods in this cadence yet.';const mc=document.getElementById('mapChips');if(mc)mc.innerHTML='';return;}
+ if(!S||!S.length){document.getElementById('pyrSvg').innerHTML='';document.getElementById('pyrChips').innerHTML='';document.getElementById('pyrSub').textContent='No periods in this cadence yet.';['rQ3','rOS','rHC','rMix','rCost','rPyr'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='';});return;}
  const labels=S.map(p=>p.label);
- renderQuadMap(cad);
  const q3=S.map(p=>p.q3pct),os=S.map(p=>p.opsSupport),hc=S.map(p=>p.total);
  const floor=SEED.meta.healthyQ3;
  const payroll=S.map(p=>p.payroll),anyCost=payroll.some(v=>v!=null);
@@ -1134,6 +1135,7 @@ function gpct(v){return (v>=0?'+':'')+v.toFixed(0)+'%';}
 function renderBE(cad){
  if(!hasData())return;
  beCad=cad||beCad;beDestroy();
+ renderQuadMap(beCad);
  const S=seriesFor(beCad),sub=document.getElementById('beSub');
  const clearIds=['beSlide','beHeadBar','beCostBar','beGrowthQuad','beRev','beGrowthTbl','bePyrDelta','beAns1','beAns2','beAns3','beAns4','beAns5','beAns6','beAnsQT','beOsrGuide','beSlideRule'];
  if(!S||!S.length){sub.textContent='No periods in this cadence yet \u2014 upload data tagged "'+beCad+'".';clearIds.forEach(id=>{const x=document.getElementById(id);if(x)x.innerHTML='';});document.getElementById('beOsrBig').textContent='\u2014';document.getElementById('beOsrTag').textContent='';return;}
