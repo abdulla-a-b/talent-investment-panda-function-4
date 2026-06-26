@@ -380,6 +380,12 @@ body.nodata .view .empty-state{display:block}
 .fc-tgt{font-weight:800}
 .fc-chg.up{color:var(--teal);font-weight:700}.fc-chg.dn{color:var(--brick);font-weight:700}.fc-chg.cost{color:var(--amber);font-weight:700}.fc-chg.flat{color:var(--muted)}
 
+.cxv-key{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 6px}
+@media(max-width:640px){.cxv-key{grid-template-columns:1fr}}
+.cxv-key>div{font-family:Archivo;font-size:13px;line-height:1.55;color:var(--ink);border:1px solid var(--line);border-left-width:4px;border-radius:9px;padding:10px 13px;background:var(--card)}
+.cxv-key>div:nth-child(1){border-left-color:var(--teal)}.cxv-key>div:nth-child(2){border-left-color:var(--amber)}.cxv-key>div:nth-child(3){border-left-color:var(--brick)}.cxv-key>div:nth-child(4){border-left-color:var(--slate)}
+.cxv-key .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.cxv-key b{font-weight:800}
 </style>
 </head>
 <body>
@@ -481,10 +487,16 @@ body.nodata .view .empty-state{display:block}
 <div class="view" data-view="costvalue">
  <div class="empty-state"><div class="es-ico">📥</div><h2>No data yet</h2><p>Upload your organisation’s monthly employee master in the locked <b>C&amp;B &amp; Headcount Input</b> tab to populate this dashboard. Each upload adds a period to the trend series.</p><button class="btn es-go">Go to data input</button></div>
   <section><div class="wrap">
-  <div class="shead"><span class="n">—</span><div><h2>Cost &times; Value — read the action</h2><p>Each segment positioned by cost-per-head against value contribution. Position dictates the move: Invest, Retain, Review, Monitor.</p></div></div>
+  <div class="shead"><span class="n">—</span><div><h2>Cost &times; Value — read the action</h2><p>One management question: <b>is our payroll money going to the groups that drive the most output?</b> Every employee group is plotted by what it <b>costs per person</b> against how much it <b>contributes to results</b> — so you can see which groups to invest in, protect, govern, or just watch.</p></div></div>
   <div class="cxv">
-   <div class="chartbox"><h3>Segment positioning</h3><div class="sub">X: value contribution (framework score, adjustable) · Y: ৳/head · bubble: headcount</div><div class="cc" style="height:300px"><canvas id="cxvChart"></canvas></div>
+   <div class="chartbox"><h3>Segment positioning</h3><div class="sub">How to read it — <b>→ right</b> = contributes more to output &amp; margin · <b>↑ up</b> = costs more per person each month · <b>bigger bubble</b> = more people. Bottom-right = high value, low cost (your best spend); top area = expensive (govern it).</div><div class="cc" style="height:300px"><canvas id="cxvChart"></canvas></div>
    <div class="rationale"><span class="why">Why this view</span>Headcount hides the real story: a segment can be 4% of people but a fifth of payroll. Plotting cost against value tells you where money is well spent (high value) versus where it needs governing (high cost, lower value) — and where under-spend is quietly costing more than it saves.</div></div>
+   <div class="cxv-key">
+    <div><span class="dot" style="background:var(--teal)"></span><b>Retain — Q1 Labour Operations.</b> High value, low cost per head. Your most efficient spend — protect it.</div>
+    <div><span class="dot" style="background:var(--amber)"></span><b>Invest — Q3 Staff Operations.</b> High value, fair cost. The multiplier on output, usually under-supplied — add here first.</div>
+    <div><span class="dot" style="background:var(--brick)"></span><b>Review — Q4 Staff Ops Support.</b> Highest cost per head, support value. Necessary overhead — keep lean, watch for creep.</div>
+    <div><span class="dot" style="background:var(--slate)"></span><b>Monitor — Q2 Labour Support.</b> Low value, low cost. Keep it tracking production, not outpacing it.</div>
+   </div>
    <div class="cards" id="deccards"></div>
   </div>
  </div></section>
@@ -864,11 +876,12 @@ function costValue(){
  const L=deriveLatest(latestPeriod());
  try{new Chart(cxvChart,{type:'bubble',data:{datasets:L.cxv.map(p=>({label:p.q,data:[{x:p.value,y:p.cost,r:8+Math.sqrt(p.head)/4}],backgroundColor:QC[p.q]+'cc',borderColor:QC[p.q],borderWidth:1.5}))},
   options:{maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const p=L.cxv[c.datasetIndex];return `${p.q} ${QNAME[p.q]}: ৳${fmt(p.cost)}/head · ${fmt(p.head)} ppl · ${p.dec}`}}}},
-  scales:{x:{min:1,max:5.6,title:{display:true,text:'Value contribution →'},...noGrid,ticks:{stepSize:1}},y:{title:{display:true,text:'Cost per head (৳/mo)'},...yGrid,ticks:{callback:v=>'৳'+v/1000+'k'}}}}});}catch(e){}
+  scales:{x:{min:1,max:5.6,title:{display:true,text:'Contribution to output / margin  →'},...noGrid,ticks:{stepSize:1}},y:{title:{display:true,text:'Cost per head (৳/mo)'},...yGrid,ticks:{callback:v=>'৳'+v/1000+'k'}}}}});}catch(e){}
  const dc=document.getElementById('deccards');dc.innerHTML='';
- const detail={Q3:'Highest value, mid cost — under-supplied. The lever.',Q1:'High value, low cost/head — strongest efficiency ratio.',Q4:'Mid value, highest cost/head — keep lean, watch creep.',Q2:'Low value, low cost — automate flow, resolve coding.'};
+ const detail={Q3:'Supervisors, QC, IE, mechanics — they make everyone else more productive. The best place to add people.',Q1:'Direct production workers. High value for low cost per head — your strongest efficiency. Protect output per worker, not just the number of workers.',Q4:'HR, finance, admin. The most expensive people per head and they don\u2019t produce directly — necessary, but keep lean as you grow.',Q2:'Helpers, loaders, cleaners. They keep the line flowing but don\u2019t produce — they should track production, not grow faster than it.'};
  ['Q3','Q1','Q4','Q2'].forEach(k=>{const d=DEC[k].toLowerCase(),g=L.seg_coded[k];
-  dc.insertAdjacentHTML('beforeend',`<div class="deccard ${d}"><span class="dectag">${DEC[k]}</span><h3>${k} · ${QNAME[k]}</h3><p>${detail[k]}</p><div class="move">৳${fmt(g.avg)}/head · ${fmt(g.head)} people · ${(g.cost/L.meta.payroll*100).toFixed(1)}% of payroll</div></div>`);});
+  const wf=(g.head/Math.max(1,L.meta.total)*100).toFixed(1);const avgTxt=g.avg?'৳'+fmt(g.avg)+'/head':'\u2014';const payPct=L.meta.payroll?(g.cost/L.meta.payroll*100).toFixed(1)+'% of payroll':'cost n/a';
+  dc.insertAdjacentHTML('beforeend',`<div class="deccard ${d}"><span class="dectag">${DEC[k]}</span><h3>${k} · ${QNAME[k]}</h3><p>${detail[k]}</p><div class="move">${fmt(g.head)} people · ${wf}% of workforce · ${avgTxt} · ${payPct}</div></div>`);});
 }
 
 /* ---------- decisions ---------- */
