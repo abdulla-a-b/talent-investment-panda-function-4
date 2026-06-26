@@ -359,7 +359,8 @@ body.nodata .view .empty-state{display:block}
 .fc-gnum{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .fc-gnum span{font-family:Archivo;font-weight:800;font-size:52px;color:var(--ink);line-height:1}
 .fc-gnum small{font-family:'IBM Plex Mono';font-size:12px;color:var(--muted);margin-top:2px}
-.fc-tier{font-family:'IBM Plex Mono';font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;margin:8px 0 12px;border:1px solid var(--line)}
+.fc-tier{font-family:'IBM Plex Mono';font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;margin:8px 0 8px;border:1px solid var(--line)}
+.fc-status{font-family:'IBM Plex Mono';font-size:13px;font-weight:800;letter-spacing:.04em;color:#fff;padding:7px 20px;border-radius:8px;margin-bottom:14px;text-align:center;min-width:120px}
 .fc-bar{width:100%;height:8px;border-radius:8px;background:var(--paperdim);overflow:hidden;margin-bottom:16px}
 .fc-bar>div{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--brick),var(--amber),var(--teal));transition:width .4s}
 .fc-summary{width:100%;border-collapse:collapse}
@@ -551,6 +552,7 @@ body.nodata .view .empty-state{display:block}
       <div class="fc-gnum"><span id="fcScore">—</span><small>/ 100</small></div>
      </div>
      <div class="fc-tier" id="fcTier">—</div>
+     <div class="fc-status" id="fcStatus" style="background:var(--slate)">—</div>
      <div class="fc-bar"><div id="fcBarFill" style="width:0%"></div></div>
      <table class="fc-summary"><tbody>
       <tr><td>Planned headcount</td><td class="r" id="fcPlanHead">—</td></tr>
@@ -707,6 +709,7 @@ function fcUpdateOutputs(){
  const pctTot=t.total?Math.round(dHead/t.total*100):0;
  const overBudget=capPct&&t.hasCost&&planPay>ceiling;
  let badge,bbg;if(overBudget){badge='Over budget';bbg='var(--brick)';}else if(score>=80){badge='Deliverable';bbg='var(--teal)';}else{badge='Review plan';bbg='var(--amber)';}
+ const st=document.getElementById('fcStatus');if(st){st.textContent=badge;st.style.background=bbg;}
  document.getElementById('fcDecide').innerHTML='To reach <b>'+(g>=0?'+':'')+Math.round(g*100)+'% output</b>: '+(adds?'add <b>'+adds+'</b>':'<b>no change</b>')+' — that\u2019s <b>'+(dHead>=0?'+':'')+fmt(dHead)+' people ('+(pctTot>=0?'+':'')+pctTot+'%)</b>'+(t.hasCost?' and <b>'+(dPay>=0?'+':'')+fmtTk(dPay)+'/month</b> (<b>'+(dPay>=0?'+':'')+fmtTk(dPay*12)+'/year</b>)':'')+'. Readiness <b>'+score+'/100</b> <span class="fc-pill" style="color:#fff;background:'+bbg+'">'+badge+'</span>';
  const hRow=q=>{const tv=t.head[q],pv=plan[q],d=pv-tv,cls=d>0?'up':d<0?'dn':'flat';return '<tr><td><span class="qn-dot" style="background:'+QC[q]+'"></span><b>'+q+'</b> · '+QFULL[q]+'</td><td class="r">'+fmt(tv)+'</td><td class="r fc-tgt">'+fmt(pv)+'</td><td class="r fc-chg '+cls+'">'+(d>0?'+':'')+(d!==0?fmt(d):'0')+'</td></tr>';};
  const cRow=q=>{const tv=t.cost[q],pv=plan[q]*t.avg[q],d=pv-tv,cls=d>0?'cost':d<0?'up':'flat';return '<tr><td><span class="qn-dot" style="background:'+QC[q]+'"></span><b>'+q+'</b></td><td class="r">'+fmtTk(tv)+'</td><td class="r fc-tgt">'+fmtTk(pv)+'</td><td class="r fc-chg '+cls+'">'+(d>0?'+':'')+fmtTk(d)+'</td></tr>';};
@@ -722,7 +725,7 @@ function renderForecast(){
  const {g,qi,capPct}=fcInputs();
  document.getElementById('fcGrowthV').textContent=(g>=0?'+':'')+Math.round(g*100)+'%';
  document.getElementById('fcQualV').textContent=QUALW[qi];document.querySelectorAll('#fcQualSeg .fc-segbtn').forEach(x=>x.classList.toggle('on',+x.dataset.qual===qi));
- document.getElementById('fcCapV').textContent=capPct?fmtTk(t.pay*(1+capPct/100)):'No cap';
+ document.getElementById('fcCapV').textContent=capPct?('+'+capPct+'%  ·  '+fmtTk(t.pay*(1+capPct/100))):'No cap';
  if(!fcPlan)recomputeAuto();
  const order=['Q1','Q2','Q3','Q4'];
  document.getElementById('fcPlan').innerHTML=order.map(q=>{const d=fcPlan[q]-t.head[q],cls=d>0?'up':d<0?'dn':'flat',mx=Math.max(t.head[q]*2,fcPlan[q]+10,10),cd=Math.round(d*t.avg[q]);
