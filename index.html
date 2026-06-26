@@ -422,6 +422,39 @@ body.nodata .view .empty-state{display:block}
 .pyr-chip:not(.on):hover{background:var(--paperdim);transform:translateY(-1px)}
 .tmt,.tq,.qmt,.cad,.fc-segbtn,.vmode,.cxv-reset{transition:all .14s}
 .tmt:not(.on):hover,.tq:not(.on):hover,.qmt:not(.on):hover,.cad:not(.on):hover,.fc-segbtn:not(.on):hover,.vmode:not(.on):hover{background:var(--paperdim)}
+/* ===== ECM MATRIX (Bird's Eye hero) ===== */
+.ecmx-card{background:linear-gradient(160deg,#0c2331,#0a1a26);border:1px solid #18353f;color:#fff;padding:18px 20px}
+.ecmx-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.ecmx-title{font-family:'IBM Plex Mono';font-size:12px;letter-spacing:.2em;color:#7fa6b0;font-weight:700}
+.ecmx-card .pyr-chips{display:flex;gap:6px;flex-wrap:wrap}
+.ecmx-card .pyr-chip{font-family:'IBM Plex Mono';font-size:11px;padding:4px 11px;border-radius:7px;border:1px solid #20454f;background:transparent;color:#9fc0c9;cursor:pointer;transition:all .14s}
+.ecmx-card .pyr-chip:hover{background:rgba(255,255,255,.06)}
+.ecmx-card .pyr-chip.on{background:var(--amber);border-color:var(--amber);color:#19120a;font-weight:700}
+.ecmx-sub{font-family:'IBM Plex Mono';font-size:11px;color:#6f96a0;margin:6px 0 14px}
+.ecmx-frame{display:grid;grid-template-columns:20px 1fr;grid-template-rows:1fr 16px;gap:10px}
+.ecmx-yaxis{grid-column:1;grid-row:1;writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.16em;color:#577984;align-self:center;white-space:nowrap}
+.ecmx-grid{grid-column:2;grid-row:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:16px}
+.ecmx-xaxis{grid-column:2;grid-row:2;display:flex;justify-content:space-between;font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.16em;color:#577984;padding:0 4px}
+.ecmx-q{position:relative;border-radius:15px;padding:16px 18px;overflow:hidden;min-height:152px;display:flex;flex-direction:column;box-shadow:0 8px 24px rgba(0,0,0,.28);transition:transform .18s,box-shadow .18s}
+.ecmx-q:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(0,0,0,.4)}
+.ecmx-q1{background:linear-gradient(135deg,#E36C2C,#BB431B)}
+.ecmx-q2{background:linear-gradient(135deg,#5d7eae,#3c5a87)}
+.ecmx-q3{background:linear-gradient(135deg,#48ad63,#2b8a49)}
+.ecmx-q4{background:linear-gradient(135deg,#EBB840,#C88F18)}
+.ecmx-wm{position:absolute;right:-4px;top:50%;transform:translateY(-50%);font-family:Archivo,sans-serif;font-weight:800;font-size:104px;line-height:.8;color:rgba(255,255,255,.12);letter-spacing:-4px;pointer-events:none}
+.ecmx-q4 .ecmx-wm{color:rgba(20,12,0,.18)}
+.ecmx-h{display:flex;align-items:center;gap:8px;position:relative;z-index:1}
+.ecmx-code{font-family:Archivo;font-weight:800;font-size:18px;color:#fff}
+.ecmx-sign{font-family:'IBM Plex Mono';font-size:11px;font-weight:700;background:rgba(0,0,0,.26);color:#fff;padding:1px 8px;border-radius:7px;letter-spacing:1.5px}
+.ecmx-name{font-family:Archivo;font-weight:800;font-size:15px;color:#fff;margin-top:9px;position:relative;z-index:1}
+.ecmx-desc{font-family:-apple-system,"Segoe UI",sans-serif;font-size:11px;color:rgba(255,255,255,.84);margin-top:2px;position:relative;z-index:1}
+.ecmx-metrics{display:flex;gap:28px;margin-top:auto;padding-top:14px;position:relative;z-index:1}
+.ecmx-v{font-family:Archivo;font-weight:800;font-size:27px;color:#fff;line-height:1}
+.ecmx-l{font-family:'IBM Plex Mono';font-size:8.5px;letter-spacing:.05em;color:rgba(255,255,255,.82);margin-top:4px;text-transform:uppercase}
+.ecmx-q4 .ecmx-code,.ecmx-q4 .ecmx-name,.ecmx-q4 .ecmx-v{color:#1b1305}
+.ecmx-q4 .ecmx-desc,.ecmx-q4 .ecmx-l{color:rgba(27,19,5,.74)}
+.ecmx-q4 .ecmx-sign{background:rgba(0,0,0,.16);color:#1b1305}
+@media(max-width:620px){.ecmx-grid{grid-template-columns:1fr}.ecmx-yaxis{display:none}}
 </style>
 </head>
 <body>
@@ -448,14 +481,15 @@ body.nodata .view .empty-state{display:block}
     <button class="cad on" data-becad="monthly">Monthly</button><button class="cad" data-becad="quarterly">Quarterly</button><button class="cad" data-becad="yearly">Yearly</button></div>
   </div>
 
-  <div class="qcard"><span class="qn">WORKFORCE MAPPING</span><h3>Where each quadrant sits — Q1–Q4</h3>
-   <div class="pyr-head" style="border:none;padding:0;margin-bottom:6px"><div><div class="sub" id="mapSub"></div></div><div class="pyr-chips" id="mapChips"></div></div>
-   <div class="qwrap" style="margin-top:6px">
-    <div class="quad" id="quad"><div class="axx"></div><div class="axy"></div>
-     <span class="qlabel axlab-t">Operations →</span><span class="qlabel axlab-b">← Support</span>
-     <span class="qlabel axlab-l">Staff ↑</span><span class="qlabel axlab-r">Labour ↓</span></div>
-    <div class="qleg" id="qleg"></div>
-   </div></div>
+  <div class="qcard ecmx-card">
+   <div class="ecmx-top"><span class="ecmx-title">ECM MATRIX · LIVE</span><div class="pyr-chips" id="mapChips"></div></div>
+   <div class="ecmx-sub" id="mapSub"></div>
+   <div class="ecmx-frame">
+    <div class="ecmx-yaxis">STAFF&nbsp;&nbsp;←&nbsp;&nbsp;EMPLOYMENT LAYER&nbsp;&nbsp;→&nbsp;&nbsp;LABOUR</div>
+    <div class="ecmx-grid" id="ecmGrid"></div>
+    <div class="ecmx-xaxis"><span>← SUPPORT</span><span>ROLE FUNCTION</span><span>OPERATIONS →</span></div>
+   </div>
+  </div>
 
   <div class="qcard" style="border-top:4px solid var(--amber)">
    <span class="qn">EXECUTIVE ECM DASHBOARD · ONE LOOK</span><h3>Are we healthy?</h3>
@@ -667,8 +701,11 @@ body.nodata .view .empty-state{display:block}
 </div>
 
 <footer><div class="wrap">
+ <div><span class="eyebrow">How this system works</span>
+  <p style="font-size:11.5px;line-height:1.7;margin-top:9px">Built on the Employee Classification Model (ECM, Al&nbsp;Babul 2026). Each employee maps to one of four segments by <b>employment layer</b> (Labour / Staff) and <b>role function</b> (Operations / Support). Authorized staff upload the monthly master file in the locked C&amp;B &amp; Headcount tab; the dashboard accumulates each uploaded period to build monthly, quarterly and yearly trends. </p>
+  
+ </div>
 
- 
 </div></footer>
 
 <script>
@@ -733,6 +770,7 @@ const QUALF={0:0.9,1:1.0,2:1.15};
 let fcPlan=null;
 function fmtBD(n){n=Math.round(n||0);const neg=n<0;n=Math.abs(n);let s=String(n);if(s.length<=3)return (neg?'-':'')+s;let last3=s.slice(-3),rest=s.slice(0,-3);rest=rest.replace(/\B(?=(\d{2})+(?!\d))/g,',');return (neg?'-':'')+rest+','+last3;}
 function fmtTk(n){return '৳'+fmtBD(n);}
+function fmtBDshort(n){n=Math.round(n||0);if(n>=1e7)return (n/1e7).toFixed(2)+'Cr';if(n>=1e5)return (n/1e5).toFixed(1)+'L';if(n>=1e3)return (n/1e3).toFixed(1)+'K';return ''+n;}
 function fcToday(){const p=latestPeriod();if(!p)return null;const head={},cost={},avg={};['Q1','Q2','Q3','Q4'].forEach(q=>{head[q]=p.head[q]||0;cost[q]=(p.cost&&p.cost[q])||0;avg[q]=head[q]?cost[q]/head[q]:0;});return {head,cost,avg,total:p.total||0,pay:p.payroll||0,hasCost:!!(p.payroll&&p.payroll>0)};}
 function fcInputs(){return {g:(+document.getElementById('fcGrowth').value)/100,qi:+document.getElementById('fcQual').value,qf:QUALF[+document.getElementById('fcQual').value],capPct:+document.getElementById('fcCap').value};}
 function recomputeAuto(){const t=fcToday();if(!t)return;const {g,qf}=fcInputs();fcPlan={Q1:Math.round(t.head.Q1*(1+g)),Q2:Math.round(t.head.Q2*(1+g)),Q3:Math.round(t.head.Q3*(1+g)*qf),Q4:t.head.Q4};}
@@ -847,25 +885,21 @@ function destroy(){Object.values(charts).forEach(c=>{try{c.destroy()}catch(e){}}
 function dir(a,b){const d=b-a;return d>0.05?['rose','▲',C.brick]:d<-0.05?['fell','▼',C.teal]:['held','▬',C.slate]}
 
 let mapSel={};
+const ECMX={Q1:{n:'Labour Operations',d:'Direct production workers',s:'++'},Q2:{n:'Labour Operations Support',d:'Labour enabling operational continuity',s:'+-'},Q3:{n:'Staff Operations',d:'Supervisory staff tied to operations',s:'-+'},Q4:{n:'Staff Operations Support',d:'Administrative & enabling overhead',s:'--'}};
 function renderQuadMap(cad){
  const S=seriesFor(cad);
- if(!S||!S.length){const q=document.getElementById('quad');if(q)q.querySelectorAll('.qcell').forEach(x=>x.remove());const ql=document.getElementById('qleg');if(ql)ql.innerHTML='';const mc=document.getElementById('mapChips');if(mc)mc.innerHTML='';const ms=document.getElementById('mapSub');if(ms)ms.textContent='No periods in this cadence yet.';return;}
- const chips=document.getElementById('mapChips');
+ const grid=document.getElementById('ecmGrid'),chips=document.getElementById('mapChips'),sub=document.getElementById('mapSub');
+ if(!grid)return;
+ if(!S||!S.length){grid.innerHTML='';if(chips)chips.innerHTML='';if(sub)sub.textContent='No periods in this cadence yet.';return;}
  if(mapSel[cad]==null||mapSel[cad]>=S.length)mapSel[cad]=S.length-1;
  if(chips){chips.innerHTML='';S.forEach((p,i)=>chips.insertAdjacentHTML('beforeend',`<button class="pyr-chip ${i===mapSel[cad]?'on':''}" data-i="${i}">${p.label}</button>`));
   chips.querySelectorAll('.pyr-chip').forEach(b=>b.onclick=()=>{mapSel[cad]=+b.dataset.i;renderQuadMap(cad);});}
- const per=S[mapSel[cad]],L=deriveLatest(per);
- const q=document.getElementById('quad');if(!q||!L)return;
- const SG=L.seg_coded,tot=L.meta.total;
- q.querySelectorAll('.qcell').forEach(x=>x.remove());
- const pos={Q3:['right','top'],Q4:['left','top'],Q1:['right','bottom'],Q2:['left','bottom']};
- const maxh=Math.max(1,...Object.values(SG).map(x=>x.head));
- Object.entries(pos).forEach(([k,pp])=>{const cell=document.createElement('div');cell.className='qcell';cell.style[pp[0]]='0';cell.style[pp[1]]='0';
-  const sz=40+Math.sqrt((SG[k].head||0)/maxh)*112;
-  cell.innerHTML=`<div class="bub" style="width:${sz}px;height:${sz}px;background:${QC[k]}"><div class="qn">${k}</div><div class="qh">${(SG[k].head/Math.max(1,tot)*100).toFixed(0)}%</div><div class="ql">${fmt(SG[k].head)} ppl</div></div>`;
-  q.appendChild(cell);});
- const leg=document.getElementById('qleg');if(leg){leg.innerHTML='';['Q3','Q1','Q4','Q2'].forEach(k=>leg.insertAdjacentHTML('beforeend',`<div class="item"><span class="dot" style="background:${QC[k]}"></span><div><b>${k} ${QNAME[k]}<span class="tag" style="background:${DECC[DEC[k]]}">${DEC[k]}</span></b><div class="d">${QDESC[k]}</div></div></div>`));}
- const sub=document.getElementById('mapSub');if(sub)sub.textContent='Period: '+per.label+(per.recon?'  \u00b7 reconstructed':'  \u00b7 captured');
+ const per=S[mapSel[cad]],L=deriveLatest(per);if(!L)return;
+ const SG=L.seg_coded,tot=L.meta.total,pay=L.meta.payroll;
+ const pctTxt=x=>{const r=Math.round(x*10)/10;return r%1===0?r.toFixed(0):r.toFixed(1);};
+ grid.innerHTML=['Q4','Q3','Q2','Q1'].map(q=>{const s=SG[q]||{head:0,cost:0};const hcp=s.head/Math.max(1,tot)*100,cop=pay?s.cost/pay*100:0;
+  return `<div class="ecmx-q ecmx-${q.toLowerCase()}"><div class="ecmx-wm">${q}</div><div class="ecmx-h"><span class="ecmx-code">${q}</span><span class="ecmx-sign">${ECMX[q].s}</span></div><div class="ecmx-name">${ECMX[q].n}</div><div class="ecmx-desc">${ECMX[q].d}</div><div class="ecmx-metrics"><div class="ecmx-m"><div class="ecmx-v">${fmt(s.head)}</div><div class="ecmx-l">Headcount · ${pctTxt(hcp)}%</div></div><div class="ecmx-m"><div class="ecmx-v">${pay?fmtBDshort(s.cost):'—'}</div><div class="ecmx-l">Cost · ${pay?pctTxt(cop)+'%':'n/a'}</div></div></div></div>`;}).join('');
+ if(sub)sub.textContent='Period: '+per.label+(per.recon?'  · reconstructed':'  · live')+'   ·   '+fmt(tot)+' employees'+(pay?'   ·   '+fmtTk(pay)+'/mo payroll':'');
 }
 function renderTrends(cad){
  curCad=cad;destroy();
