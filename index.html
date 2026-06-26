@@ -320,6 +320,61 @@ body.nodata .view .empty-state{display:block}
 .gtbl th:first-child{text-align:left}
 .gtbl td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--line)}
 .gtbl td:first-child{text-align:left;font-weight:600;color:var(--ink)}
+/* ===== Forecast tab ===== */
+.fc-grid{display:grid;grid-template-columns:1.35fr .85fr;gap:18px;margin-top:6px}
+@media(max-width:900px){.fc-grid{grid-template-columns:1fr}}
+.fc-left{display:flex;flex-direction:column;gap:18px}
+.fc-card{padding:20px 22px}
+.fc-eyebrow{font-family:'IBM Plex Mono';font-size:11px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:14px}
+.fc-target{margin-bottom:18px}
+.fc-target:last-child{margin-bottom:0}
+.fc-trow{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px}
+.fc-trow label{font-family:Archivo;font-weight:700;font-size:14px;color:var(--ink)}
+.fc-tval{font-family:'IBM Plex Mono';font-weight:700;font-size:14px;color:var(--teal)}
+.fc-slider{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:5px;background:var(--paperdim);outline:none}
+.fc-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--teal);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.fc-slider::-moz-range-thumb{width:18px;height:18px;border:none;border-radius:50%;background:var(--teal);cursor:pointer}
+.fc-plan{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){.fc-plan{grid-template-columns:1fr}}
+.fc-box{border:1px solid var(--line);border-left-width:4px;border-radius:10px;padding:13px 15px;background:var(--card)}
+.fc-box-h{display:flex;align-items:center;gap:7px;font-family:Archivo;font-weight:800;font-size:13px;color:var(--ink)}
+.fc-box-h .fc-q{margin-left:auto;font-family:'IBM Plex Mono';font-size:11px;color:var(--muted)}
+.fc-dot{width:10px;height:10px;border-radius:50%;flex:none}
+.fc-box-sub{font-family:'IBM Plex Mono';font-size:10.5px;color:var(--muted);margin:3px 0 7px}
+.fc-box-n{font-family:Archivo;font-weight:800;font-size:26px;color:var(--ink);line-height:1}
+.fc-delta{font-family:'IBM Plex Mono';font-size:12px;font-weight:700;margin-left:8px}
+.fc-delta.up{color:var(--teal)} .fc-delta.dn{color:var(--brick)} .fc-delta.flat{color:var(--muted)}
+.fc-qslider{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;background:var(--paperdim);outline:none;margin:11px 0 7px}
+.fc-qslider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--ink);cursor:pointer}
+.fc-qslider::-moz-range-thumb{width:14px;height:14px;border:none;border-radius:50%;background:var(--ink);cursor:pointer}
+.fc-box-cost{font-family:'IBM Plex Mono';font-size:11px;color:var(--amber);font-weight:700}
+.fc-right{display:flex}
+.fc-score{flex:1;display:flex;flex-direction:column;align-items:center;padding:22px}
+.fc-score h3{font-family:Archivo;font-weight:800;color:var(--ink);margin:0 0 6px;font-size:17px}
+.fc-gauge{position:relative;width:200px;height:200px;margin:6px 0 2px}
+.fc-gnum{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.fc-gnum span{font-family:Archivo;font-weight:800;font-size:52px;color:var(--ink);line-height:1}
+.fc-gnum small{font-family:'IBM Plex Mono';font-size:12px;color:var(--muted);margin-top:2px}
+.fc-tier{font-family:'IBM Plex Mono';font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;margin:8px 0 12px;border:1px solid var(--line)}
+.fc-bar{width:100%;height:8px;border-radius:8px;background:var(--paperdim);overflow:hidden;margin-bottom:16px}
+.fc-bar>div{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--brick),var(--amber),var(--teal));transition:width .4s}
+.fc-summary{width:100%;border-collapse:collapse}
+.fc-summary td{padding:9px 2px;border-top:1px solid var(--line);font-family:'IBM Plex Mono';font-size:13px;color:var(--ink)}
+.fc-summary td.r{text-align:right;font-weight:700}
+.fc-summary tr:first-child td{border-top:none}
+.fc-decide{background:var(--paperdim);border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-family:Archivo;font-size:14px;line-height:1.7;color:var(--ink);margin-bottom:16px}
+.fc-decide b{font-weight:800}
+.fc-pill{display:inline-block;font-family:'IBM Plex Mono';font-size:11px;font-weight:700;padding:2px 10px;border-radius:12px;margin-left:4px}
+.fc-tbl{width:100%;border-collapse:collapse}
+.fc-tbl th{font-family:'IBM Plex Mono';font-size:10.5px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;text-align:left;padding:9px 10px;border-bottom:2px solid var(--line)}
+.fc-tbl th.r,.fc-tbl td.r{text-align:right}
+.fc-tbl td{padding:10px;border-bottom:1px solid var(--line);font-family:'IBM Plex Mono';font-size:13px;color:var(--ink)}
+.fc-tbl tr.fc-sec td{background:var(--paperdim);font-family:Archivo;font-weight:800;font-size:11px;letter-spacing:.05em;color:var(--muted);text-transform:uppercase;padding:7px 10px}
+.fc-tbl tr.fc-tot td{font-family:Archivo;font-weight:800;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}
+.fc-tbl .qn-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:middle}
+.fc-tgt{font-weight:800}
+.fc-chg.up{color:var(--teal);font-weight:700}.fc-chg.dn{color:var(--brick);font-weight:700}.fc-chg.cost{color:var(--amber);font-weight:700}.fc-chg.flat{color:var(--muted)}
+
 </style>
 </head>
 <body>
@@ -330,6 +385,7 @@ body.nodata .view .empty-state{display:block}
   <button class="tab" data-v="trends">Trends</button>
   <button class="tab" data-v="costvalue">Cost&times;Value</button>
   <button class="tab" data-v="top">Top 10</button>
+  <button class="tab" data-v="forecast">Forecast</button>
   <button class="tab" data-v="input"><span class="lock">🔒</span> C&amp;B &amp; Headcount Input</button>
  </div>
  <div class="asof" id="asofline"></div>
@@ -448,6 +504,61 @@ body.nodata .view .empty-state{display:block}
  </div></section>
 </div>
 
+<!-- ============ FORECAST ============ -->
+<div class="view" data-view="forecast">
+ <div class="empty-state"><div class="es-ico">📥</div><h2>No data yet</h2><p>Upload your monthly employee master in the locked <b>C&amp;B &amp; Headcount Input</b> tab to run a manpower forecast.</p><button class="btn es-go">Go to data input</button></div>
+ <section><div class="wrap">
+  <div class="shead"><span class="n">◹</span><div><h2>Manpower forecast &amp; budgeting</h2><p>Set a business target, then move resources into each quadrant. The readiness gauge tells you whether your manpower plan can hit the target — and what it will cost. <i>How many Q1–Q4 resources are needed?</i></p></div></div>
+
+  <div class="fc-grid">
+   <div class="fc-left">
+    <div class="card fc-card"><span class="fc-eyebrow">Business targets</span>
+     <div class="fc-target">
+      <div class="fc-trow"><label>Production output growth</label><span class="fc-tval" id="fcGrowthV">+30%</span></div>
+      <input type="range" id="fcGrowth" min="-20" max="100" value="30" step="5" class="fc-slider">
+     </div>
+     <div class="fc-target">
+      <div class="fc-trow"><label>Quality / supervision intensity</label><span class="fc-tval" id="fcQualV">Standard</span></div>
+      <input type="range" id="fcQual" min="0" max="2" value="1" step="1" class="fc-slider">
+     </div>
+     <div class="fc-target">
+      <div class="fc-trow"><label>Monthly cost ceiling</label><span class="fc-tval" id="fcCapV">No cap</span></div>
+      <input type="range" id="fcCap" min="0" max="100" value="0" step="5" class="fc-slider">
+     </div>
+    </div>
+    <div class="card fc-card"><span class="fc-eyebrow">Resource plan — add / reduce heads</span>
+     <div class="fc-plan" id="fcPlan"></div>
+    </div>
+   </div>
+
+   <div class="fc-right">
+    <div class="card fc-score"><h3>Plan readiness score</h3>
+     <div class="fc-gauge">
+      <svg viewBox="0 0 200 200" width="200" height="200">
+       <defs><linearGradient id="fcGrad" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#C2503C"/><stop offset="0.5" stop-color="#D98A2B"/><stop offset="1" stop-color="#2E8B7F"/></linearGradient></defs>
+       <circle cx="100" cy="100" r="82" fill="none" stroke="#E9EBE8" stroke-width="16"/>
+       <circle id="fcArc" cx="100" cy="100" r="82" fill="none" stroke="url(#fcGrad)" stroke-width="16" stroke-linecap="round" transform="rotate(-90 100 100)" stroke-dasharray="515.2" stroke-dashoffset="515.2"/>
+      </svg>
+      <div class="fc-gnum"><span id="fcScore">—</span><small>/ 100</small></div>
+     </div>
+     <div class="fc-tier" id="fcTier">—</div>
+     <div class="fc-bar"><div id="fcBarFill" style="width:0%"></div></div>
+     <table class="fc-summary"><tbody>
+      <tr><td>Planned headcount</td><td class="r" id="fcPlanHead">—</td></tr>
+      <tr><td>Monthly payroll</td><td class="r" id="fcPlanPay">—</td></tr>
+      <tr><td>Δ vs today</td><td class="r" id="fcPlanDelta">—</td></tr>
+     </tbody></table>
+    </div>
+   </div>
+  </div>
+
+  <div class="card fc-card" style="margin-top:18px"><span class="fc-eyebrow">Present vs target plan — the decision</span>
+   <div class="fc-decide" id="fcDecide"></div>
+   <table class="fc-tbl" id="fcTable"></table>
+  </div>
+ </div></section>
+</div>
+
 <!-- ============ INPUT (LOCKED) ============ -->
 <div class="view" data-view="input">
  <!-- gate -->
@@ -554,7 +665,63 @@ function updateAsof(msg){const p=latestPeriod(),el=document.getElementById('asof
 function applyBranding(){const o=(CONFIG.orgName||'').trim();
  document.getElementById('brand').innerHTML=(o?o+' \u00b7 ECM':'ECM')+' <small>Workforce Intelligence System</small>';
  if(o)document.title=o+' — ECM Workforce Intelligence System';}
-function refreshDataState(){document.body.classList.toggle('nodata',!hasData());updateAsof();if(hasData()){renderBE(beCad);costValue();}renderTopEarners();}
+/* ===== Forecast tab ===== */
+const QFULL={Q1:'Labour Operations',Q2:'Labour Operations Support',Q3:'Staff Operations',Q4:'Staff Operations Support'};
+const QUALW={0:'Lean',1:'Standard',2:'High'};
+const QUALF={0:0.9,1:1.0,2:1.15};
+let fcPlan=null;
+function fmtBD(n){n=Math.round(n||0);const neg=n<0;n=Math.abs(n);let s=String(n);if(s.length<=3)return (neg?'-':'')+s;let last3=s.slice(-3),rest=s.slice(0,-3);rest=rest.replace(/\B(?=(\d{2})+(?!\d))/g,',');return (neg?'-':'')+rest+','+last3;}
+function fmtTk(n){return '৳'+fmtBD(n);}
+function fcToday(){const p=latestPeriod();if(!p)return null;const head={},cost={},avg={};['Q1','Q2','Q3','Q4'].forEach(q=>{head[q]=p.head[q]||0;cost[q]=(p.cost&&p.cost[q])||0;avg[q]=head[q]?cost[q]/head[q]:0;});return {head,cost,avg,total:p.total||0,pay:p.payroll||0,hasCost:!!(p.payroll&&p.payroll>0)};}
+function fcInputs(){return {g:(+document.getElementById('fcGrowth').value)/100,qi:+document.getElementById('fcQual').value,qf:QUALF[+document.getElementById('fcQual').value],capPct:+document.getElementById('fcCap').value};}
+function recomputeAuto(){const t=fcToday();if(!t)return;const {g,qf}=fcInputs();fcPlan={Q1:Math.round(t.head.Q1*(1+g)),Q2:Math.round(t.head.Q2*(1+g)),Q3:Math.round(t.head.Q3*(1+g)*qf),Q4:t.head.Q4};}
+function fcPaintBox(q){const t=fcToday();const sl=document.querySelector('.fc-qslider[data-q="'+q+'"]');if(!sl||!t)return;const box=sl.closest('.fc-box');const v=fcPlan[q],d=v-t.head[q],cls=d>0?'up':d<0?'dn':'flat',cd=Math.round(d*t.avg[q]);box.querySelector('.fc-box-n').innerHTML=fmt(v)+'<span class="fc-delta '+cls+'">'+(d>0?'+':'')+fmt(d)+'</span>';box.querySelector('.fc-box-cost').textContent=t.hasCost?((cd>=0?'+':'')+fmtTk(cd)+'/month'):'cost n/a';}
+function fcUpdateOutputs(){
+ const t=fcToday();if(!t||!fcPlan)return;const {g,qi,qf,capPct}=fcInputs();const order=['Q1','Q2','Q3','Q4'];const plan=fcPlan;
+ const ceiling=capPct?t.pay*(1+capPct/100):0;
+ const planTotal=order.reduce((s,q)=>s+plan[q],0);
+ const planPay=order.reduce((s,q)=>s+plan[q]*t.avg[q],0);
+ const dHead=planTotal-t.total,dPay=planPay-t.pay;
+ document.getElementById('fcPlanHead').textContent=fmt(planTotal);
+ document.getElementById('fcPlanPay').textContent=t.hasCost?fmtTk(planPay):'—';
+ document.getElementById('fcPlanDelta').textContent=t.hasCost?((dPay>=0?'+':'')+fmtTk(dPay)):((dHead>=0?'+':'')+fmt(dHead)+' heads');
+ const needQ1=t.head.Q1*(1+g),needQ3=t.head.Q3*(1+g)*qf,needQ2=t.head.Q2*(1+g);
+ const sOut=needQ1>0?Math.min(1,plan.Q1/needQ1):1, sSup=needQ3>0?Math.min(1,plan.Q3/needQ3):1, sSpt=needQ2>0?Math.min(1,plan.Q2/needQ2):1, sAdm=t.head.Q4>0?Math.min(1,plan.Q4/t.head.Q4):1;
+ let sCost=1;if(capPct&&t.hasCost)sCost=planPay<=ceiling?1:Math.max(0,1-(planPay-ceiling)/ceiling);
+ let score=Math.round(40*sOut+22*sSup+13*sSpt+5*sAdm+20*sCost);score=Math.max(0,Math.min(100,score));
+ const circ=515.2;document.getElementById('fcArc').setAttribute('stroke-dashoffset',(circ*(1-score/100)).toFixed(1));
+ document.getElementById('fcScore').textContent=score;
+ let tier,tcol;if(score>=90){tier='ECM Grandmaster';tcol='var(--teal)';}else if(score>=75){tier='ECM Strategist';tcol='var(--amber)';}else if(score>=60){tier='ECM Builder';tcol='var(--slate)';}else{tier='Needs rework';tcol='var(--brick)';}
+ const te=document.getElementById('fcTier');te.textContent='● '+tier;te.style.color=tcol;te.style.borderColor=tcol;
+ document.getElementById('fcBarFill').style.width=score+'%';
+ const adds=order.filter(q=>plan[q]-t.head[q]!==0).map(q=>{const d=plan[q]-t.head[q];return (d>0?'+':'')+fmt(d)+' '+q;}).join(', ');
+ const pctTot=t.total?Math.round(dHead/t.total*100):0;
+ const overBudget=capPct&&t.hasCost&&planPay>ceiling;
+ let badge,bbg;if(overBudget){badge='Over budget';bbg='var(--brick)';}else if(score>=80){badge='Deliverable';bbg='var(--teal)';}else{badge='Review plan';bbg='var(--amber)';}
+ document.getElementById('fcDecide').innerHTML='To reach <b>'+(g>=0?'+':'')+Math.round(g*100)+'% output</b>: '+(adds?'add <b>'+adds+'</b>':'<b>no change</b>')+' — that\u2019s <b>'+(dHead>=0?'+':'')+fmt(dHead)+' people ('+(pctTot>=0?'+':'')+pctTot+'%)</b>'+(t.hasCost?' and <b>'+(dPay>=0?'+':'')+fmtTk(dPay)+'/month</b> (<b>'+(dPay>=0?'+':'')+fmtTk(dPay*12)+'/year</b>)':'')+'. Readiness <b>'+score+'/100</b> <span class="fc-pill" style="color:#fff;background:'+bbg+'">'+badge+'</span>';
+ const hRow=q=>{const tv=t.head[q],pv=plan[q],d=pv-tv,cls=d>0?'up':d<0?'dn':'flat';return '<tr><td><span class="qn-dot" style="background:'+QC[q]+'"></span><b>'+q+'</b> · '+QFULL[q]+'</td><td class="r">'+fmt(tv)+'</td><td class="r fc-tgt">'+fmt(pv)+'</td><td class="r fc-chg '+cls+'">'+(d>0?'+':'')+(d!==0?fmt(d):'0')+'</td></tr>';};
+ const cRow=q=>{const tv=t.cost[q],pv=plan[q]*t.avg[q],d=pv-tv,cls=d>0?'cost':d<0?'up':'flat';return '<tr><td><span class="qn-dot" style="background:'+QC[q]+'"></span><b>'+q+'</b></td><td class="r">'+fmtTk(tv)+'</td><td class="r fc-tgt">'+fmtTk(pv)+'</td><td class="r fc-chg '+cls+'">'+(d>0?'+':'')+fmtTk(d)+'</td></tr>';};
+ let html='<thead><tr><th>Metric</th><th class="r">Today</th><th class="r">Target plan</th><th class="r">Change</th></tr></thead><tbody>';
+ html+='<tr class="fc-sec"><td colspan="4">Headcount</td></tr>'+order.map(hRow).join('');
+ html+='<tr class="fc-tot"><td>Total workforce</td><td class="r">'+fmt(t.total)+'</td><td class="r">'+fmt(planTotal)+'</td><td class="r fc-chg '+(dHead>0?'up':dHead<0?'dn':'flat')+'">'+(dHead>0?'+':'')+fmt(dHead)+'</td></tr>';
+ if(t.hasCost){html+='<tr class="fc-sec"><td colspan="4">Cost — monthly payroll (৳)</td></tr>'+order.map(cRow).join('');html+='<tr class="fc-tot"><td>Total payroll</td><td class="r">'+fmtTk(t.pay)+'</td><td class="r">'+fmtTk(planPay)+'</td><td class="r fc-chg '+(dPay>0?'cost':dPay<0?'up':'flat')+'">'+(dPay>0?'+':'')+fmtTk(dPay)+'</td></tr>';}
+ else{html+='<tr class="fc-sec"><td colspan="4">Cost — upload salary data to enable the payroll forecast</td></tr>';}
+ html+='</tbody>';document.getElementById('fcTable').innerHTML=html;
+}
+function renderForecast(){
+ const t=fcToday();if(!t||!document.querySelector('[data-view=forecast]'))return;
+ const {g,qi,capPct}=fcInputs();
+ document.getElementById('fcGrowthV').textContent=(g>=0?'+':'')+Math.round(g*100)+'%';
+ document.getElementById('fcQualV').textContent=QUALW[qi];
+ document.getElementById('fcCapV').textContent=capPct?fmtTk(t.pay*(1+capPct/100)):'No cap';
+ if(!fcPlan)recomputeAuto();
+ const order=['Q1','Q2','Q3','Q4'];
+ document.getElementById('fcPlan').innerHTML=order.map(q=>{const d=fcPlan[q]-t.head[q],cls=d>0?'up':d<0?'dn':'flat',mx=Math.max(t.head[q]*2,fcPlan[q]+10,10),cd=Math.round(d*t.avg[q]);
+  return '<div class="fc-box" style="border-left-color:'+QC[q]+'"><div class="fc-box-h"><span class="fc-dot" style="background:'+QC[q]+'"></span>'+QFULL[q]+'<span class="fc-q">'+q+'</span></div><div class="fc-box-sub">avg '+(t.avg[q]?fmtTk(t.avg[q]):'—')+'/head</div><div class="fc-box-n">'+fmt(fcPlan[q])+'<span class="fc-delta '+cls+'">'+(d>0?'+':'')+fmt(d)+'</span></div><input type="range" class="fc-qslider" data-q="'+q+'" min="0" max="'+Math.round(mx)+'" value="'+fcPlan[q]+'"><div class="fc-box-cost">'+(t.hasCost?((cd>=0?'+':'')+fmtTk(cd)+'/month'):'cost n/a')+'</div></div>';}).join('');
+ fcUpdateOutputs();
+}
+
+function refreshDataState(){document.body.classList.toggle('nodata',!hasData());updateAsof();if(hasData()){renderBE(beCad);costValue();fcPlan=null;renderForecast();}renderTopEarners();}
 
 /* ---------- tabs ---------- */
 document.getElementById('tabs').addEventListener('click',e=>{
@@ -564,6 +731,7 @@ document.getElementById('tabs').addEventListener('click',e=>{
  document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.dataset.view===v));
  if(v==='be')renderBE(beCad);
  if(v==='top')renderTopEarners();
+ if(v==='forecast')renderForecast();
  if(v==='trends')renderTrends(curCad);
  window.scrollTo(0,0);
 });
@@ -1253,6 +1421,8 @@ document.querySelectorAll('.be-cad .cad').forEach(b=>b.onclick=()=>{document.que
 document.querySelectorAll('.qmt').forEach(b=>b.onclick=()=>{document.querySelectorAll('.qmt').forEach(x=>x.classList.remove('on'));b.classList.add('on');beQuadMetric=b.dataset.qmt;renderBE(beCad);});
 document.querySelectorAll('.tmt').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tmt').forEach(x=>x.classList.remove('on'));b.classList.add('on');topMetric=b.dataset.tmt;renderTopEarners();});
 document.querySelectorAll('.tq').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tq').forEach(x=>x.classList.remove('on'));b.classList.add('on');topQ=b.dataset.tq;renderTopEarners();});
+['fcGrowth','fcQual','fcCap'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('input',()=>{recomputeAuto();renderForecast();});});
+(function(){const fp=document.getElementById('fcPlan');if(fp)fp.addEventListener('input',e=>{const s=e.target.closest('.fc-qslider');if(s&&fcPlan){fcPlan[s.dataset.q]=+s.value;fcPaintBox(s.dataset.q);fcUpdateOutputs();}});})();
 
 /* ---------- init ---------- */
 loadRoster();loadAll();renderTopEarners();
