@@ -334,6 +334,10 @@ body.nodata .view .empty-state{display:block}
 .fc-slider{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:5px;background:var(--paperdim);outline:none}
 .fc-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--teal);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.25)}
 .fc-slider::-moz-range-thumb{width:18px;height:18px;border:none;border-radius:50%;background:var(--teal);cursor:pointer}
+.fc-seg{display:flex;gap:6px;background:var(--paperdim);padding:4px;border-radius:9px}
+.fc-segbtn{flex:1;font-family:'IBM Plex Mono';font-size:12.5px;font-weight:700;padding:8px 6px;border:1px solid transparent;background:transparent;color:var(--muted);border-radius:7px;cursor:pointer;transition:all .15s}
+.fc-segbtn:hover{color:var(--ink)}
+.fc-segbtn.on{background:var(--card);color:var(--teal);border-color:var(--line);box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .fc-plan{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:560px){.fc-plan{grid-template-columns:1fr}}
 .fc-box{border:1px solid var(--line);border-left-width:4px;border-radius:10px;padding:13px 15px;background:var(--card)}
@@ -519,7 +523,12 @@ body.nodata .view .empty-state{display:block}
      </div>
      <div class="fc-target">
       <div class="fc-trow"><label>Quality / supervision intensity</label><span class="fc-tval" id="fcQualV">Standard</span></div>
-      <input type="range" id="fcQual" min="0" max="2" value="1" step="1" class="fc-slider">
+      <input type="hidden" id="fcQual" value="1">
+      <div class="fc-seg" id="fcQualSeg">
+       <button type="button" class="fc-segbtn" data-qual="0">Lean</button>
+       <button type="button" class="fc-segbtn on" data-qual="1">Standard</button>
+       <button type="button" class="fc-segbtn" data-qual="2">High</button>
+      </div>
      </div>
      <div class="fc-target">
       <div class="fc-trow"><label>Monthly cost ceiling</label><span class="fc-tval" id="fcCapV">No cap</span></div>
@@ -712,7 +721,7 @@ function renderForecast(){
  const t=fcToday();if(!t||!document.querySelector('[data-view=forecast]'))return;
  const {g,qi,capPct}=fcInputs();
  document.getElementById('fcGrowthV').textContent=(g>=0?'+':'')+Math.round(g*100)+'%';
- document.getElementById('fcQualV').textContent=QUALW[qi];
+ document.getElementById('fcQualV').textContent=QUALW[qi];document.querySelectorAll('#fcQualSeg .fc-segbtn').forEach(x=>x.classList.toggle('on',+x.dataset.qual===qi));
  document.getElementById('fcCapV').textContent=capPct?fmtTk(t.pay*(1+capPct/100)):'No cap';
  if(!fcPlan)recomputeAuto();
  const order=['Q1','Q2','Q3','Q4'];
@@ -1421,7 +1430,8 @@ document.querySelectorAll('.be-cad .cad').forEach(b=>b.onclick=()=>{document.que
 document.querySelectorAll('.qmt').forEach(b=>b.onclick=()=>{document.querySelectorAll('.qmt').forEach(x=>x.classList.remove('on'));b.classList.add('on');beQuadMetric=b.dataset.qmt;renderBE(beCad);});
 document.querySelectorAll('.tmt').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tmt').forEach(x=>x.classList.remove('on'));b.classList.add('on');topMetric=b.dataset.tmt;renderTopEarners();});
 document.querySelectorAll('.tq').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tq').forEach(x=>x.classList.remove('on'));b.classList.add('on');topQ=b.dataset.tq;renderTopEarners();});
-['fcGrowth','fcQual','fcCap'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('input',()=>{recomputeAuto();renderForecast();});});
+['fcGrowth','fcCap'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('input',()=>{recomputeAuto();renderForecast();});});
+(function(){const seg=document.getElementById('fcQualSeg');if(seg)seg.addEventListener('click',e=>{const btn=e.target.closest('.fc-segbtn');if(!btn)return;document.getElementById('fcQual').value=btn.dataset.qual;seg.querySelectorAll('.fc-segbtn').forEach(x=>x.classList.toggle('on',x===btn));recomputeAuto();renderForecast();});})();
 (function(){const fp=document.getElementById('fcPlan');if(fp)fp.addEventListener('input',e=>{const s=e.target.closest('.fc-qslider');if(s&&fcPlan){fcPlan[s.dataset.q]=+s.value;fcPaintBox(s.dataset.q);fcUpdateOutputs();}});})();
 
 /* ---------- init ---------- */
