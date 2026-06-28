@@ -461,6 +461,9 @@ body.nodata .view .empty-state{display:block}
 .hf.on{background:#2F6DB5;color:#fff;border-color:#2F6DB5}
 .hf2.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .hf:not(.on):hover,.hf2:not(.on):hover{background:var(--paperdim)}
+.view[data-view="top"] #topGate{display:none}
+.view[data-view="top"].locked #topGate{display:block}
+.view[data-view="top"].locked > section,.view[data-view="top"].locked > .empty-state{display:none!important}
 </style>
 </head>
 <body>
@@ -603,7 +606,14 @@ body.nodata .view .empty-state{display:block}
 </div>
 
 <!-- ============ TOP 10 ============ -->
-<div class="view" data-view="top">
+<div class="view locked" data-view="top">
+ <div id="topGate"><div class="lock-wrap"><div class="lock-card">
+  <div class="lock-ico">🔒</div>
+  <h2>Top 10 — restricted</h2>
+  <p>This view lists individual employees with names, salary and service. Enter the access key to continue.</p>
+  <div class="pwrow"><input id="topPw" type="password" placeholder="Access key" autocomplete="off"/><button class="btn" id="topUnlock">Unlock</button></div>
+  <div class="lock-err" id="topErr"></div>
+ </div></div></div>
  <div class="empty-state"><div class="es-ico">📥</div><h2>No data yet</h2><p>Upload your monthly employee master in the locked <b>C&amp;B &amp; Headcount Input</b> tab to populate this dashboard.</p><button class="btn es-go">Go to data input</button></div>
  <section><div class="wrap">
   <div class="shead"><span class="n">★</span><div><h2>Top 10 by quadrant</h2><p id="topSub"></p></div></div>
@@ -728,9 +738,9 @@ body.nodata .view .empty-state{display:block}
 <footer><div class="wrap">
  <div><span class="eyebrow">How this system works</span>
   <p style="font-size:11.5px;line-height:1.7;margin-top:9px">Built on the Employee Classification Model (ECM, Al&nbsp;Babul 2026). Each employee maps to one of four segments by <b>employment layer</b> (Labour / Staff) and <b>role function</b> (Operations / Support).</p>
-  
- </div>
  
+ </div>
+
 </div></footer>
 
 <script>
@@ -741,7 +751,10 @@ const CONFIG={
   endpoint:"https://script.google.com/macros/s/AKfycbysqm2J9qIQSnwhKyDuHQyFlaGHURGq-kB38VwT0TQL1HMvTQDNiBryqNJtYFY5zofZhg/exec",                 // Apps Script Web App /exec URL. Empty = local cache only.
   uploadToken:"CHANGE-ME-TOKEN",
   // SHA-256 of access key. Default key is "ecm-admin-2026" — CHANGE IT.
-  gateHash:"1a56c3a43524b3df2a3146465f0edf81f895eb672fb43f861078f1858f98e218"
+  gateHash:"1a56c3a43524b3df2a3146465f0edf81f895eb672fb43f861078f1858f98e218",
+  // SHA-256 of the Top 10 password. Defaults to the same access key ("ecm-admin-2026").
+  // To use a SEPARATE password for Top 10, paste that password's SHA-256 here.
+  topHash:"1a56c3a43524b3df2a3146465f0edf81f895eb672fb43f861078f1858f98e218"
 };
 
 const C={ink:'#102A30',amber:'#D98A2B',teal:'#2E8B7F',brick:'#C2503C',slate:'#7E929B',muted:'#5C6E73',line:'#DCE0DD'};
@@ -855,7 +868,7 @@ document.getElementById('tabs').addEventListener('click',e=>{
  const v=b.dataset.v;
  document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.dataset.view===v));
  if(v==='be')renderBE(beCad);
- if(v==='top')renderTopEarners();
+ if(v==='top'){lockTopView();if(topUnlocked)renderTopEarners();}
  if(v==='costvalue'){syncCxvEditor();costValue();}
  if(v==='forecast')renderForecast();
  if(v==='trends')renderTrends(curCad);
@@ -1099,6 +1112,17 @@ async function tryUnlock(){
 }
 document.getElementById('unlock').onclick=tryUnlock;
 document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')tryUnlock()});
+let topUnlocked=false;
+function lockTopView(){const tv=document.querySelector('.view[data-view="top"]');if(tv)tv.classList.toggle('locked',!topUnlocked);}
+async function tryTopUnlock(){
+ const v=document.getElementById('topPw').value,err=document.getElementById('topErr');
+ if(!v){err.textContent='Enter the access key.';return}
+ const h=await sha256(v);
+ if(h===CONFIG.topHash){topUnlocked=true;lockTopView();renderTopEarners();}
+ else{err.textContent='Incorrect key.';document.getElementById('topPw').value='';}
+}
+document.getElementById('topUnlock').onclick=tryTopUnlock;
+document.getElementById('topPw').addEventListener('keydown',e=>{if(e.key==='Enter')tryTopUnlock()});
 
 /* ---------- INPUT: classification (mirrors Python) ---------- */
 function norm(s){return String(s==null?'':s).toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim()}
@@ -1643,7 +1667,7 @@ document.querySelectorAll('.tq').forEach(b=>b.onclick=()=>{document.querySelecto
 (function(){const fp=document.getElementById('fcPlan');if(fp)fp.addEventListener('input',e=>{const s=e.target.closest('.fc-qslider');if(s&&fcPlan){fcPlan[s.dataset.q]=+s.value;fcPaintBox(s.dataset.q);fcUpdateOutputs();}});})();
 
 /* ---------- init ---------- */
-loadRoster();loadAll();renderTopEarners();
+loadRoster();loadAll();renderTopEarners();lockTopView();
 document.querySelectorAll('.es-go').forEach(b=>b.onclick=gotoInput);
 document.getElementById('clearAll').onclick=clearAllPeriods;
 </script>
