@@ -455,6 +455,12 @@ body.nodata .view .empty-state{display:block}
 .ecmx-q4 .ecmx-desc,.ecmx-q4 .ecmx-l{color:rgba(27,19,5,.74)}
 .ecmx-q4 .ecmx-sign{background:rgba(0,0,0,.16);color:#1b1305}
 @media(max-width:620px){.ecmx-grid{grid-template-columns:1fr}.ecmx-yaxis{display:none}}
+.hire-filters{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:12px 0 2px}
+.hire-filters .hf-lbl{font-family:'IBM Plex Mono';font-size:11px;color:var(--muted)}
+.hf,.hf2{font-family:'IBM Plex Mono';font-size:11.5px;padding:5px 11px;border:1px solid var(--line);background:var(--card);border-radius:7px;cursor:pointer;transition:all .14s}
+.hf.on{background:#2F6DB5;color:#fff;border-color:#2F6DB5}
+.hf2.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.hf:not(.on):hover,.hf2:not(.on):hover{background:var(--paperdim)}
 </style>
 </head>
 <body>
@@ -561,7 +567,13 @@ body.nodata .view .empty-state{display:block}
 
   <div class="chartbox" style="margin-top:18px"><h3>New hires by year — department matrix</h3>
    <div class="sub">Share of each department&rsquo;s current people who joined in each year (from joining dates). Brighter cell = a bigger hiring wave that year. Bottom row is the company total.</div>
-   <div style="overflow-x:auto;margin-top:10px" id="hireMatrix"></div>
+   <div class="hire-filters">
+    <span class="hf-lbl">Gender:</span>
+    <button class="hf on" data-hs="all">All</button><button class="hf" data-hs="M">Male</button><button class="hf" data-hs="F">Female</button>
+    <span class="hf-lbl" style="margin-left:16px">ECM level:</span>
+    <button class="hf2 on" data-hl="all">All</button><button class="hf2" data-hl="M">Management</button><button class="hf2" data-hl="S">Staff</button><button class="hf2" data-hl="W">Worker</button>
+   </div>
+   <div style="overflow-x:auto;margin-top:6px" id="hireMatrix"></div>
   </div>
  </div></section>
 </div>
@@ -716,7 +728,7 @@ body.nodata .view .empty-state{display:block}
 <footer><div class="wrap">
  <div><span class="eyebrow">How this system works</span>
   <p style="font-size:11.5px;line-height:1.7;margin-top:9px">Built on the Employee Classification Model (ECM, Al&nbsp;Babul 2026). Each employee maps to one of four segments by <b>employment layer</b> (Labour / Staff) and <b>role function</b> (Operations / Support).</p>
- 
+  
  </div>
  
 </div></footer>
@@ -924,8 +936,30 @@ function renderGenderTrend(S){
  if(sum){if(hasSex){const last=S[S.length-1],lm=(last.sex&&last.sex.M)||0,lf=(last.sex&&last.sex.F)||0,lt=lm+lf;
    sum.innerHTML='<b>'+last.label+'</b> &mdash; Male <b>'+fmt(lm)+'</b> ('+(lt?Math.round(lm/lt*100):0)+'%) &nbsp;·&nbsp; Female <b>'+fmt(lf)+'</b> ('+(lt?Math.round(lf/lt*100):0)+'%) &nbsp;·&nbsp; ratio <b>'+(lf?(lm/lf).toFixed(2):'—')+' : 1</b>';}
   else sum.innerHTML='<span style="color:var(--brick)">No Sex/Gender data in these periods.</span> Upload a master that includes a Sex (or Gender) column to populate this.';}
- try{charts.gender=new Chart(cv,{type:'bar',data:{labels:labels,datasets:[{label:'Male',data:M,backgroundColor:C.teal,borderRadius:3},{label:'Female',data:F,backgroundColor:C.amber,borderRadius:3}]},
+ try{charts.gender=new Chart(cv,{type:'bar',data:{labels:labels,datasets:[{label:'Male',data:M,backgroundColor:'#2F6DB5',borderRadius:3},{label:'Female',data:F,backgroundColor:'#DB6FA6',borderRadius:3}]},
   options:{maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}}},scales:{x:{stacked:true,grid:{display:false},border:{color:C.line}},y:{stacked:true,grid:{color:'#EEF0EE'},border:{display:false}}}}});}catch(e){}
+}
+let hireSex='all',hireLevel='all';
+function rosterLevel(r){const d=String(r.desig||'').toLowerCase();if(['manager','general manager','deputy manager'].some(k=>d.includes(k)))return 'M';return (r.q==='Q1'||r.q==='Q2')?'W':'S';}
+function renderHireMatrix(){
+ const nh=document.getElementById('hireMatrix');if(!nh)return;
+ if(!ROSTER||!ROSTER.length){nh.innerHTML='';return;}
+ const valid=y=>y&&/^(19|20)\d\d$/.test(y);
+ let R=ROSTER.filter(r=>(hireSex==='all'||r.sex===hireSex)&&(hireLevel==='all'||rosterLevel(r)===hireLevel));
+ if(!R.length){nh.innerHTML='<div class="be-ans">No employees match this filter.</div>';return;}
+ let yrs=[...new Set(R.map(r=>r.doj&&String(r.doj).slice(0,4)).filter(valid))].sort();
+ if(!yrs.length){nh.innerHTML='<div class="be-ans">No valid joining-date years in this selection.</div>';return;}
+ let earlier=null,cols=yrs.slice();if(cols.length>8){earlier=cols.slice(0,cols.length-8);cols=cols.slice(cols.length-8);}
+ const colKeys=(earlier?['Earlier']:[]).concat(cols);
+ const yearOf=r=>{const y=r.doj&&String(r.doj).slice(0,4);if(!valid(y))return null;if(earlier&&earlier.indexOf(y)>=0)return 'Earlier';return y;};
+ const dd={};R.forEach(r=>{const d=(r.dept&&String(r.dept).trim())||'(no department)';if(!dd[d])dd[d]={d:d,t:0,by:{}};dd[d].t++;const y=yearOf(r);if(y)dd[d].by[y]=(dd[d].by[y]||0)+1;});
+ let drows=Object.values(dd).sort((a,b)=>b.t-a.t);
+ const tot={};let totT=0;drows.forEach(r=>{totT+=r.t;colKeys.forEach(k=>tot[k]=(tot[k]||0)+(r.by[k]||0));});
+ const cell=(c,t)=>{if(!t)return '<td class="r">\u2014</td>';const p=c/t*100;return '<td class="r" style="background:'+heatCell(p)+'">'+(p>=0.5?(p<10?p.toFixed(1):Math.round(p))+'%':'\u00b7')+'</td>';};
+ let h='<table class="tbl"><thead><tr><th>Department</th>'+colKeys.map(k=>'<th class="r">'+k+'</th>').join('')+'<th class="r">People</th></tr></thead><tbody>';
+ drows.forEach(r=>{h+='<tr><td>'+r.d+'</td>'+colKeys.map(k=>cell(r.by[k]||0,r.t)).join('')+'<td class="r">'+fmt(r.t)+'</td></tr>';});
+ h+='<tr class="fc-tot"><td>Total</td>'+colKeys.map(k=>cell(tot[k]||0,totT)).join('')+'<td class="r">'+fmt(totT)+'</td></tr></tbody></table>';
+ nh.innerHTML=h;
 }
 function renderRosterStats(){
  const gd=document.getElementById('genderDept'),nh=document.getElementById('hireMatrix');
@@ -935,26 +969,12 @@ function renderRosterStats(){
  if(gd){const byD={};ROSTER.forEach(r=>{const d=(r.dept&&String(r.dept).trim())||'(no department)';if(!byD[d])byD[d]={d:d,M:0,F:0,U:0,t:0};byD[d][r.sex||'U']++;byD[d].t++;});
   let rows=Object.values(byD).sort((a,b)=>b.t-a.t);let TM=0,TF=0,TU=0,TT=0;rows.forEach(r=>{TM+=r.M;TF+=r.F;TU+=r.U;TT+=r.t;});
   const fp=(f,t)=>t?Math.round(f/t*100)+'%':'\u2014';const showU=TU>0;
-  let g='<table class="tbl"><thead><tr><th>Department</th><th class="r">Male</th><th class="r">Female</th>'+(showU?'<th class="r">N/A</th>':'')+'<th class="r">Total</th><th class="r">Female&nbsp;%</th></tr></thead><tbody>';
+  let g='<table class="tbl"><thead><tr><th>Department</th><th class="r"><span style="color:#2F6DB5">●</span> Male</th><th class="r"><span style="color:#DB6FA6">●</span> Female</th>'+(showU?'<th class="r">N/A</th>':'')+'<th class="r">Total</th><th class="r">Female&nbsp;%</th></tr></thead><tbody>';
   rows.forEach(r=>{g+='<tr><td>'+r.d+'</td><td class="r">'+fmt(r.M)+'</td><td class="r">'+fmt(r.F)+'</td>'+(showU?'<td class="r">'+fmt(r.U)+'</td>':'')+'<td class="r">'+fmt(r.t)+'</td><td class="r">'+fp(r.F,r.t)+'</td></tr>';});
   g+='<tr class="fc-tot"><td>Total</td><td class="r">'+fmt(TM)+'</td><td class="r">'+fmt(TF)+'</td>'+(showU?'<td class="r">'+fmt(TU)+'</td>':'')+'<td class="r">'+fmt(TT)+'</td><td class="r">'+fp(TF,TT)+'</td></tr></tbody></table>';
   gd.innerHTML=g;}
  /* new-hire matrix: department x joining-year (% of department's current people) */
- if(nh){const valid=y=>y&&/^(19|20)\d\d$/.test(y);
-  let yrs=[...new Set(ROSTER.map(r=>r.doj&&String(r.doj).slice(0,4)).filter(valid))].sort();
-  if(!yrs.length){nh.innerHTML='<div class="be-ans">No valid joining-date years found in the roster.</div>';return;}
-  let earlier=null,cols=yrs.slice();
-  if(cols.length>8){earlier=cols.slice(0,cols.length-8);cols=cols.slice(cols.length-8);}
-  const colKeys=(earlier?['Earlier']:[]).concat(cols);
-  const yearOf=r=>{const y=r.doj&&String(r.doj).slice(0,4);if(!valid(y))return null;if(earlier&&earlier.indexOf(y)>=0)return 'Earlier';return y;};
-  const dd={};ROSTER.forEach(r=>{const d=(r.dept&&String(r.dept).trim())||'(no department)';if(!dd[d])dd[d]={d:d,t:0,by:{}};dd[d].t++;const y=yearOf(r);if(y)dd[d].by[y]=(dd[d].by[y]||0)+1;});
-  let drows=Object.values(dd).sort((a,b)=>b.t-a.t);
-  const tot={};let totT=0;drows.forEach(r=>{totT+=r.t;colKeys.forEach(k=>tot[k]=(tot[k]||0)+(r.by[k]||0));});
-  const cell=(c,t)=>{if(!t)return '<td class="r">\u2014</td>';const p=c/t*100;return '<td class="r" style="background:'+heatCell(p)+'">'+(p>=0.5?(p<10?p.toFixed(1):Math.round(p))+'%':'\u00b7')+'</td>';};
-  let h='<table class="tbl"><thead><tr><th>Department</th>'+colKeys.map(k=>'<th class="r">'+k+'</th>').join('')+'<th class="r">People</th></tr></thead><tbody>';
-  drows.forEach(r=>{h+='<tr><td>'+r.d+'</td>'+colKeys.map(k=>cell(r.by[k]||0,r.t)).join('')+'<td class="r">'+fmt(r.t)+'</td></tr>';});
-  h+='<tr class="fc-tot"><td>Total</td>'+colKeys.map(k=>cell(tot[k]||0,totT)).join('')+'<td class="r">'+fmt(totT)+'</td></tr></tbody></table>';
-  nh.innerHTML=h;}
+ if(nh)renderHireMatrix();
 }
 
 function renderTrends(cad){
@@ -1618,6 +1638,7 @@ document.querySelectorAll('.tmt').forEach(b=>b.onclick=()=>{document.querySelect
 document.querySelectorAll('.tq').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tq').forEach(x=>x.classList.remove('on'));b.classList.add('on');topQ=b.dataset.tq;renderTopEarners();});
 ['fcGrowth','fcCap'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('input',()=>{recomputeAuto();renderForecast();});});
 (function(){const seg=document.getElementById('fcQualSeg');if(seg)seg.addEventListener('click',e=>{const btn=e.target.closest('.fc-segbtn');if(!btn)return;document.getElementById('fcQual').value=btn.dataset.qual;seg.querySelectorAll('.fc-segbtn').forEach(x=>x.classList.toggle('on',x===btn));recomputeAuto();renderForecast();});})();
+(function(){const hf=document.querySelector('.hire-filters');if(hf)hf.addEventListener('click',e=>{const s=e.target.closest('.hf'),l=e.target.closest('.hf2');if(s){hireSex=s.dataset.hs;hf.querySelectorAll('.hf').forEach(x=>x.classList.toggle('on',x===s));renderHireMatrix();}else if(l){hireLevel=l.dataset.hl;hf.querySelectorAll('.hf2').forEach(x=>x.classList.toggle('on',x===l));renderHireMatrix();}});})();
 (function(){const g=document.getElementById('cxvEditGrid');if(g)g.addEventListener('input',e=>{const s=e.target.closest('input[data-vq]');if(!s)return;const q=s.dataset.vq;VAL[q]=+s.value;const ev=document.getElementById('vv'+q);if(ev)ev.textContent=(+s.value).toFixed(1);persistVAL();costValue();});const rb=document.getElementById('cxvReset');if(rb)rb.addEventListener('click',()=>{VAL=Object.assign({},VAL_DEFAULT);persistVAL();syncCxvEditor();costValue();});const md=document.getElementById('cxvMode');if(md)md.addEventListener('click',e=>{const btn=e.target.closest('.vmode');if(!btn)return;valueMode=btn.dataset.vmode;try{localStorage.setItem('ecm_cxv_mode',valueMode)}catch(_e){}syncCxvEditor();costValue();});})();
 (function(){const fp=document.getElementById('fcPlan');if(fp)fp.addEventListener('input',e=>{const s=e.target.closest('.fc-qslider');if(s&&fcPlan){fcPlan[s.dataset.q]=+s.value;fcPaintBox(s.dataset.q);fcUpdateOutputs();}});})();
 
